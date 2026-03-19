@@ -1,0 +1,445 @@
+{% extends 'core/base.html' %}
+{% block title %}Class Results{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-table-list"></i> Class Results</span>
+{% endblock %}
+
+{% block content %}
+<style>
+  .comp-pass {
+    display: inline-flex; align-items: center; gap: 3px;
+    color: #15803d; font-weight: 700; font-size: 13px;
+  }
+  .comp-fail {
+    display: inline-flex; align-items: center; gap: 3px;
+    color: #dc2626; font-weight: 700; font-size: 13px;
+  }
+  .comp-na { color: #94a3b8; font-size: 12px; }
+  .min-hint { font-size: 9px; color: #94a3b8; display: block; }
+
+  .subj-table {
+    width: 100%; border-collapse: collapse; font-size: 13px; background: #f8fafc;
+  }
+  .subj-table th {
+    background: #e2e8f0; color: #475569; font-weight: 700; padding: 6px 10px;
+    text-align: center; font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .subj-table td {
+    padding: 7px 10px; border-bottom: 1px solid #e2e8f0; text-align: center; vertical-align: middle;
+  }
+  .subj-table td.subj-name {
+    text-align: left; font-weight: 600; color: #1e293b; min-width: 130px;
+  }
+  .expand-btn {
+    background: none; border: 1px solid #cbd5e1; border-radius: 6px; padding: 3px 8px;
+    font-size: 12px; cursor: pointer; color: #475569; transition: 0.15s;
+  }
+  .expand-btn:hover { background: #e2e8f0; }
+  .detail-row { display: none; }
+  .detail-row.open { display: table-row; }
+  .detail-cell { padding: 0 !important; border: none !important; }
+
+  /* Search + filter bar */
+  .tool-bar {
+    display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+    background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px;
+    padding: 16px 20px; margin-bottom: 20px;
+  }
+  .tool-bar .form-group { margin: 0; }
+  .tool-bar .form-control { min-width: 140px; }
+  .filter-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+    background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;
+    text-decoration: none; transition: 0.15s;
+  }
+  .filter-pill:hover { background: #e2e8f0; }
+  .filter-pill.active { background: var(--blue-600); color: white; border-color: var(--blue-600); }
+  .active-filter-bar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 10px 16px; background: #fef9c3; border: 1px solid #fde047;
+    border-radius: 8px; margin-bottom: 16px; font-size: 13px;
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Class Results Overview</h1>
+    <p class="page-subtitle">Component-wise marks with pass/fail · sorted by roll number</p>
+  </div>
+</div>
+
+<!-- ═══════ SELECTOR PANEL ═══════ -->
+<div class="section-card filter-panel" style="margin-bottom:20px;">
+  <form method="get" class="filter-grid" id="mainFilterForm">
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">Academic Year</label>
+      <select name="year" class="form-control">
+        <option value="">— Select —</option>
+        {% for yr in academic_years %}
+        <option value="{{ yr }}" {% if sel_year == yr %}selected{% endif %}>{{ yr }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">Class</label>
+      <select name="class_id" class="form-control">
+        <option value="">— Select —</option>
+        {% for cls in classes %}
+        <option value="{{ cls.pk }}" {% if sel_cls == cls.pk|stringformat:"s" %}selected{% endif %}>{{ cls }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">Semester</label>
+      <select name="sem" class="form-control">
+        <option value="">— Select —</option>
+        {% for val, label in sem_list %}
+        <option value="{{ val }}" {% if sel_sem == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <!-- hidden fields to preserve filter/search state -->
+    <input type="hidden" name="q" value="{{ search_q }}">
+    <input type="hidden" name="filter" value="{{ filter_by }}">
+    <input type="hidden" name="comp_fail" value="{{ comp_fail }}">
+    <div class="filter-actions" style="display:flex;align-items:flex-end;gap:8px;">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> View</button>
+      <a href="{% url 're_result_list' %}" class="btn btn-outline">Clear</a>
+    </div>
+  </form>
+</div>
+
+{% if sel_year and sel_cls and sel_sem %}
+<!-- ═══════ SEARCH + FILTER BAR ═══════ -->
+<div class="tool-bar">
+  <div class="form-group" style="flex:1; min-width:200px;">
+    <label class="form-label">Search Student</label>
+    <form method="get" id="searchForm" style="display:flex; gap:8px;">
+      <input type="hidden" name="year" value="{{ sel_year }}">
+      <input type="hidden" name="class_id" value="{{ sel_cls }}">
+      <input type="hidden" name="sem" value="{{ sel_sem }}">
+      <input type="hidden" name="filter" value="{{ filter_by }}">
+      <input type="hidden" name="comp_fail" value="{{ comp_fail }}">
+      <input type="text" name="q" class="form-control" placeholder="Name or Roll No…" value="{{ search_q }}" style="flex:1;" />
+      <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+    </form>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Result Filter</label>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <a href="?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&q={{ search_q }}"
+         class="filter-pill {% if not filter_by and not comp_fail %}active{% endif %}">All</a>
+      <a href="?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&q={{ search_q }}&filter=pass"
+         class="filter-pill {% if filter_by == 'pass' %}active{% endif %}"><i class="fas fa-check"></i> Pass</a>
+      <a href="?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&q={{ search_q }}&filter=fail"
+         class="filter-pill {% if filter_by == 'fail' %}active{% endif %}"><i class="fas fa-xmark"></i> Fail</a>
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label class="form-label">Failed in Component</label>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <a href="?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&q={{ search_q }}&comp_fail=ia1"
+         class="filter-pill {% if comp_fail == 'ia1' %}active{% endif %}">IA-1</a>
+      <a href="?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&q={{ search_q }}&comp_fail=ia2"
+         class="filter-pill {% if comp_fail == 'ia2' %}active{% endif %}">IA-2</a>
+      <a href="?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&q={{ search_q }}&comp_fail=sem"
+         class="filter-pill {% if comp_fail == 'sem' %}active{% endif %}">SEM</a>
+      <a href="?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&q={{ search_q }}&comp_fail=tw"
+         class="filter-pill {% if comp_fail == 'tw' %}active{% endif %}">TW</a>
+      <a href="?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&q={{ search_q }}&comp_fail=oral"
+         class="filter-pill {% if comp_fail == 'oral' %}active{% endif %}">Oral</a>
+    </div>
+  </div>
+</div>
+
+{% if filter_by or comp_fail or search_q %}
+<div class="active-filter-bar">
+  <i class="fas fa-filter" style="color:#d97706;"></i>
+  <strong>Active filters:</strong>
+  {% if search_q %}<span>Search: "{{ search_q }}"</span>{% endif %}
+  {% if filter_by %}<span>Result: {{ filter_by|upper }}</span>{% endif %}
+  {% if comp_fail %}<span>Failed in: {{ comp_fail|upper }}</span>{% endif %}
+  <a href="?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}"
+     style="margin-left:auto; font-weight:600; color:#dc2626; font-size:12px;"><i class="fas fa-xmark"></i> Clear Filters</a>
+</div>
+{% endif %}
+{% endif %}
+
+{% if analytics %}
+<div class="stats-grid">
+  <div class="stat-card stat-blue">
+    <div class="stat-card-icon"><i class="fas fa-users"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ analytics.total_students }}</span>
+      <span class="stat-card-label">Total Students</span>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-card-icon"><i class="fas fa-circle-check"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ analytics.pass_pct }}%</span>
+      <span class="stat-card-label">Pass Rate</span>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-card-icon"><i class="fas fa-chart-line"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ analytics.class_avg_sgpa }}</span>
+      <span class="stat-card-label">Class Avg SGPA</span>
+    </div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-card-icon"><i class="fas fa-triangle-exclamation"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ analytics.fail_count }}</span>
+      <span class="stat-card-label">Students Failed</span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% if summaries %}
+<div class="section-card">
+  <div class="card-header" style="flex-wrap:wrap; gap:12px;">
+    <h2 class="card-title"><i class="fas fa-list-ol"></i> Semester {{ sel_sem }} Results</h2>
+    <div style="display:flex; align-items:center; gap:12px;">
+      <span class="badge-count">{{ summaries|length }} student{{ summaries|length|pluralize }}</span>
+      <button type="button" class="btn btn-outline btn-sm" onclick="toggleAllDetails()" id="expandAllBtn">
+        <i class="fas fa-chevron-down"></i> Expand All
+      </button>
+    </div>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="data-table" style="margin:0;">
+      <thead>
+        <tr>
+          <th style="width:4%">#</th>
+          <th style="width:10%">Roll No</th>
+          <th>Student Name</th>
+          <th style="text-align:center;">Total</th>
+          <th style="text-align:center;">%</th>
+          <th style="text-align:center;">SGPA</th>
+          <th style="text-align:center;">Credits</th>
+          <th style="text-align:center;">Failed</th>
+          <th style="text-align:center;">Result</th>
+          <th style="width:6%; text-align:center;">View</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in summaries %}
+        <!-- Summary row -->
+        <tr>
+          <td class="td-num">{{ forloop.counter }}</td>
+          <td><span class="badge-roll">{{ s.enrollment.roll_id }}</span></td>
+          <td>
+            <a href="{% url 'student_detail' s.enrollment.student.pk %}">
+              <strong>{{ s.enrollment.student.name }}</strong>
+            </a>
+          </td>
+          <td style="text-align:center;">{{ s.total_marks|floatformat:1 }} / {{ s.max_marks|floatformat:0 }}</td>
+          <td style="text-align:center;">{{ s.percentage|floatformat:1 }}%</td>
+          <td style="text-align:center;">
+            <span class="sgpa-pill {% if s.sgpa >= 8 %}sgpa-high{% elif s.sgpa >= 6 %}sgpa-mid{% else %}sgpa-low{% endif %}">
+              {{ s.sgpa }}
+            </span>
+          </td>
+          <td style="text-align:center;">{{ s.earned_credits }} / {{ s.total_credits }}</td>
+          <td style="text-align:center;">
+            {% if s.subjects_failed > 0 %}
+              <span class="status-badge status-fail">{{ s.subjects_failed }}</span>
+            {% else %}<span style="color:var(--gray-400);">—</span>{% endif %}
+          </td>
+          <td style="text-align:center;">
+            {% if s.result == 'Pass' %}
+              <span class="status-badge status-pass"><i class="fas fa-check"></i> Pass</span>
+            {% else %}
+              <span class="status-badge status-fail"><i class="fas fa-xmark"></i> Fail</span>
+            {% endif %}
+          </td>
+          <td style="text-align:center;">
+            {% if s.er_list %}
+            <button class="expand-btn" onclick="toggleDetail({{ s.enrollment.id }})" title="Show component marks">
+              <i class="fas fa-chevron-down" id="icon-{{ s.enrollment.id }}"></i>
+            </button>
+            {% endif %}
+          </td>
+        </tr>
+
+        <!-- Per-subject component rows -->
+        {% if s.er_list %}
+        <tr class="detail-row" id="det-{{ s.enrollment.id }}">
+          <td class="detail-cell" colspan="10">
+            <div style="padding:12px 20px; background:#f8fafc; border-top:2px solid #e2e8f0;">
+              <table class="subj-table">
+                <thead>
+                  <tr>
+                    <th style="text-align:left;">Subject</th>
+                    <th>IA-1</th>
+                    <th>IA-2</th>
+                    <th>SEM</th>
+                    <th>TW</th>
+                    <th>Oral</th>
+                    <th>Total</th>
+                    <th>Grade</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for er in s.er_list %}
+                  <tr>
+                    <td class="subj-name">
+                      {{ er.semester_subject.subject.display_name }}
+                      {% if er.semester_subject.subject.code %}
+                        <span class="badge-code" style="font-size:10px;">{{ er.semester_subject.subject.code }}</span>
+                      {% endif %}
+                    </td>
+
+                    <!-- IA-1 -->
+                    <td>
+                      {% if er.semester_subject.has_ia %}
+                        {% if er.ia1 is not None %}
+                          {% if er.ia1 < er.semester_subject.min_ia1 %}
+                            <span class="comp-fail"><i class="fas fa-xmark"></i> {{ er.ia1|floatformat:1 }}</span>
+                            <span class="min-hint">min {{ er.semester_subject.min_ia1 }}</span>
+                          {% else %}
+                            <span class="comp-pass"><i class="fas fa-check"></i> {{ er.ia1|floatformat:1 }}</span>
+                          {% endif %}
+                        {% else %}<span class="comp-na">—</span>{% endif %}
+                      {% else %}<span class="comp-na">N/A</span>{% endif %}
+                    </td>
+
+                    <!-- IA-2 -->
+                    <td>
+                      {% if er.semester_subject.has_ia %}
+                        {% if er.ia2 is not None %}
+                          {% if er.ia2 < er.semester_subject.min_ia2 %}
+                            <span class="comp-fail"><i class="fas fa-xmark"></i> {{ er.ia2|floatformat:1 }}</span>
+                            <span class="min-hint">min {{ er.semester_subject.min_ia2 }}</span>
+                          {% else %}
+                            <span class="comp-pass"><i class="fas fa-check"></i> {{ er.ia2|floatformat:1 }}</span>
+                          {% endif %}
+                        {% else %}<span class="comp-na">—</span>{% endif %}
+                      {% else %}<span class="comp-na">N/A</span>{% endif %}
+                    </td>
+
+                    <!-- SEM -->
+                    <td>
+                      {% if er.semester_subject.has_sem %}
+                        {% if er.sem is not None %}
+                          {% if er.sem < er.semester_subject.min_sem %}
+                            <span class="comp-fail"><i class="fas fa-xmark"></i> {{ er.sem|floatformat:1 }}</span>
+                            <span class="min-hint">min {{ er.semester_subject.min_sem }}</span>
+                          {% else %}
+                            <span class="comp-pass"><i class="fas fa-check"></i> {{ er.sem|floatformat:1 }}</span>
+                          {% endif %}
+                        {% else %}<span class="comp-na">—</span>{% endif %}
+                      {% else %}<span class="comp-na">N/A</span>{% endif %}
+                    </td>
+
+                    <!-- TW -->
+                    <td>
+                      {% if er.semester_subject.has_tw %}
+                        {% if er.tw is not None %}
+                          {% if er.tw < er.semester_subject.min_tw %}
+                            <span class="comp-fail"><i class="fas fa-xmark"></i> {{ er.tw|floatformat:1 }}</span>
+                            <span class="min-hint">min {{ er.semester_subject.min_tw }}</span>
+                          {% else %}
+                            <span class="comp-pass"><i class="fas fa-check"></i> {{ er.tw|floatformat:1 }}</span>
+                          {% endif %}
+                        {% else %}<span class="comp-na">—</span>{% endif %}
+                      {% else %}<span class="comp-na">N/A</span>{% endif %}
+                    </td>
+
+                    <!-- Oral -->
+                    <td>
+                      {% if er.semester_subject.has_oral %}
+                        {% if er.oral is not None %}
+                          {% if er.oral < er.semester_subject.min_oral %}
+                            <span class="comp-fail"><i class="fas fa-xmark"></i> {{ er.oral|floatformat:1 }}</span>
+                            <span class="min-hint">min {{ er.semester_subject.min_oral }}</span>
+                          {% else %}
+                            <span class="comp-pass"><i class="fas fa-check"></i> {{ er.oral|floatformat:1 }}</span>
+                          {% endif %}
+                        {% else %}<span class="comp-na">—</span>{% endif %}
+                      {% else %}<span class="comp-na">N/A</span>{% endif %}
+                    </td>
+
+                    <td><strong>{{ er.total|floatformat:1 }}</strong></td>
+                    <td><span class="grade-badge grade-{{ er.grade }}">{{ er.grade }}</span></td>
+                    <td>
+                      {% if er.status == 'Pass' %}
+                        <span class="status-badge status-pass" style="font-size:11px;"><i class="fas fa-check"></i> Pass</span>
+                      {% elif er.status == 'Absent' %}
+                        <span class="status-badge" style="font-size:11px; background:var(--orange-100); color:var(--orange-600);">Absent</span>
+                      {% else %}
+                        <span class="status-badge status-fail" style="font-size:11px;"><i class="fas fa-xmark"></i> Fail</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% elif sel_year and sel_cls and sel_sem %}
+<div class="section-card">
+  <div class="empty-state">
+    <i class="fas fa-table-list"></i>
+    <h3>No Results Found</h3>
+    {% if search_q or filter_by or comp_fail %}
+      <p>No students match the current filters. Try removing a filter.</p>
+      <a href="?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}" class="btn btn-primary">Clear Filters</a>
+    {% else %}
+      <p>No semester summaries found. Enter marks first using Bulk Entry.</p>
+      <a href="{% url 're_bulk_entry' %}" class="btn btn-primary">Go to Bulk Entry</a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<script>
+function toggleDetail(enrollmentId) {
+  var row = document.getElementById('det-' + enrollmentId);
+  var icon = document.getElementById('icon-' + enrollmentId);
+  if (!row) return;
+  if (row.classList.contains('open')) {
+    row.classList.remove('open');
+    icon.className = 'fas fa-chevron-down';
+  } else {
+    row.classList.add('open');
+    icon.className = 'fas fa-chevron-up';
+  }
+}
+
+var allExpanded = false;
+function toggleAllDetails() {
+  var rows = document.querySelectorAll('.detail-row');
+  var btn = document.getElementById('expandAllBtn');
+  allExpanded = !allExpanded;
+  rows.forEach(function(r) {
+    if (allExpanded) {
+      r.classList.add('open');
+    } else {
+      r.classList.remove('open');
+    }
+  });
+  document.querySelectorAll('.expand-btn i').forEach(function(icon) {
+    icon.className = allExpanded ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+  });
+  btn.innerHTML = allExpanded
+    ? '<i class="fas fa-chevron-up"></i> Collapse All'
+    : '<i class="fas fa-chevron-down"></i> Expand All';
+}
+</script>
+{% endblock %}

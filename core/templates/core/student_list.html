@@ -1,0 +1,110 @@
+{% extends 'core/base.html' %}
+{% block title %}Students{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-users"></i> Students</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Students</h1>
+    <p class="page-subtitle">{{ students|length }} enrollment{{ students|length|pluralize }} found</p>
+  </div>
+  <div class="header-actions">
+    <a href="{% url 're_enrollment_create' %}" class="btn btn-success">
+      <i class="fas fa-id-card"></i> Enroll Student
+    </a>
+    <a href="{% url 'student_upload' %}" class="btn btn-outline">
+      <i class="fas fa-file-excel"></i> Upload Excel
+    </a>
+    <a href="{% url 'student_create' %}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Add Student
+    </a>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filter-bar">
+  <form method="get" class="filter-form">
+    <select name="class" class="form-control filter-select" onchange="this.form.submit()">
+      <option value="">All Classes</option>
+      {% for cls in classes %}
+      <option value="{{ cls.pk }}" {% if class_filter == cls.pk|stringformat:"s" %}selected{% endif %}>{{ cls }}</option>
+      {% endfor %}
+    </select>
+    <div class="filter-search">
+      <i class="fas fa-search"></i>
+      <input type="text" name="search" value="{{ search }}" class="form-control"
+             placeholder="Search name, roll ID, email..." />
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+    {% if search or class_filter %}
+      <a href="{% url 'student_list' %}" class="btn btn-outline">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+<div class="section-card">
+  {% if students %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Roll ID</th>
+        <th>Name</th>
+        <th>Class</th>
+        <th>Year</th>
+        <th>Gender</th>
+        <th>Email</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {# students queryset is now Enrollment objects — sorted by roll_id ascending #}
+      {% for enr in students %}
+      <tr>
+        <td class="td-num">{{ forloop.counter }}</td>
+        <td><span class="badge-roll">{{ enr.roll_id }}</span></td>
+        <td>
+          <a href="{% url 'student_detail' enr.student.pk %}" class="student-link">
+            {{ enr.student.name }}
+          </a>
+        </td>
+        <td><span class="badge-class-sm">{{ enr.student_class.display_name }}</span></td>
+        <td class="text-muted">{{ enr.academic_year }}</td>
+        <td>
+          <span class="gender-badge gender-{{ enr.student.gender|lower }}">
+            {{ enr.student.gender }}
+          </span>
+        </td>
+        <td class="text-muted">{{ enr.student.email|default:"—" }}</td>
+        <td class="td-actions">
+          <a href="{% url 'student_detail' enr.student.pk %}"
+             class="btn-icon btn-view" title="View"><i class="fas fa-eye"></i></a>
+          <a href="{% url 'student_edit' enr.student.pk %}"
+             class="btn-icon btn-edit" title="Edit"><i class="fas fa-pen"></i></a>
+          <a href="{% url 'student_delete' enr.student.pk %}"
+             class="btn-icon btn-delete" title="Delete"><i class="fas fa-trash"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-users"></i>
+    <h3>No Students Found</h3>
+    <p>
+      {% if search or class_filter %}
+        No students match your filter.
+      {% else %}
+        Add students manually or upload an Excel file to get started.
+      {% endif %}
+    </p>
+    <div class="empty-actions">
+      <a href="{% url 'student_create' %}" class="btn btn-primary">Add Student</a>
+      <a href="{% url 'student_upload' %}" class="btn btn-success">Upload Excel</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,285 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ action }} Semester Subject{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 're_semester_subject_list' %}">Semester Subjects</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">{{ action }}</span>
+{% endblock %}
+
+{% block content %}
+<style>
+  .modern-form-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    padding: 32px;
+    margin-top: 20px;
+    border: 1px solid var(--gray-200);
+  }
+  .form-grid-top {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .component-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .comp-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    transition: all 0.2s;
+  }
+  .comp-card:hover {
+    border-color: var(--blue-400);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
+  }
+  .comp-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .comp-header .form-check-input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: var(--blue-600);
+  }
+  .comp-header label {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--gray-800);
+    cursor: pointer;
+    margin: 0;
+  }
+  .marks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .marks-group {
+    background: white;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+  }
+  .marks-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    display: block;
+  }
+  .marks-group input {
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--gray-900);
+    width: 100%;
+    padding: 0;
+  }
+  .marks-group input:focus {
+    outline: none;
+    color: var(--blue-600);
+  }
+  .marks-group.max-bg { border-left: 3px solid var(--blue-500); }
+  .marks-group.min-bg { border-left: 3px solid var(--orange-500); }
+</style>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ action }} Semester Subject</h1>
+    <p class="page-subtitle">Configure subject details, assessment components, and passing rules</p>
+  </div>
+</div>
+
+<div class="modern-form-card">
+  {% if messages %}
+    {% for msg in messages %}
+    <div class="alert alert-{{ msg.tags }}" style="margin-bottom:24px;">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <h3 style="font-size:16px; font-weight:700; color:var(--gray-800); margin-bottom:20px; display:flex; align-items:center; gap:8px;">
+      <i class="fas fa-book-open text-blue-500"></i> Subject Details
+    </h3>
+
+    <div class="form-grid-top">
+      <div class="form-group">
+        <label class="form-label">Class <span class="text-red-500">*</span></label>
+        <select name="student_class" class="form-control" required>
+          <option value="">— Select Class —</option>
+          {% for cls in classes %}
+          <option value="{{ cls.pk }}" {% if ss and ss.student_class_id == cls.pk %}selected{% endif %}>{{ cls }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Subject <span class="text-red-500">*</span></label>
+        <select name="subject" class="form-control" required>
+          <option value="">— Select Subject —</option>
+          {% for subj in subjects %}
+          <option value="{{ subj.pk }}" {% if ss and ss.subject_id == subj.pk %}selected{% endif %}>{{ subj }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Semester <span class="text-red-500">*</span></label>
+        <select name="semester" class="form-control" required>
+          <option value="">— Select Semester —</option>
+          {% for val, label in semester_choices %}
+          <option value="{{ val }}" {% if ss and ss.semester == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Academic Year <span class="text-red-500">*</span></label>
+        <input type="text" name="academic_year" class="form-control" placeholder="e.g. 2024-25" value="{{ ss.academic_year|default:'' }}" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Credits</label>
+        <input type="number" name="credits" class="form-control" value="{{ ss.credits|default:'4' }}" min="1" max="10" />
+      </div>
+    </div>
+
+    <div class="section-divider" style="border-top:1px solid var(--gray-200); margin:32px 0;"></div>
+    
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+      <h3 style="font-size:16px; font-weight:700; color:var(--gray-800); display:flex; align-items:center; gap:8px; margin:0;">
+        <i class="fas fa-sliders text-blue-500"></i> Components & Rules
+      </h3>
+      <span class="badge" style="background:var(--blue-50); color:var(--blue-700);">Pass Rule: ALL enabled components ≥ Min Marks</span>
+    </div>
+
+    <div class="component-grid">
+
+      <!-- IA -->
+      <div class="comp-card">
+        <div class="comp-header">
+          <input type="checkbox" name="has_ia" id="has_ia" class="form-check-input" {% if action == 'Create' or ss.has_ia %}checked{% endif %}>
+          <label for="has_ia">Internal Assessment (IA)</label>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+          <div>
+            <span style="font-size:13px; font-weight:600; color:var(--gray-500); margin-bottom:8px; display:block;">IA-1 Config</span>
+            <div class="marks-grid">
+              <div class="marks-group max-bg">
+                <label>Max Marks</label>
+                <input type="number" name="max_ia1" value="{{ ss.max_ia1|default:'20' }}" min="0" />
+              </div>
+              <div class="marks-group min-bg">
+                <label>Passing Min</label>
+                <input type="number" name="min_ia1" value="{{ ss.min_ia1|default:'8' }}" min="0" />
+              </div>
+            </div>
+          </div>
+          <div>
+            <span style="font-size:13px; font-weight:600; color:var(--gray-500); margin-bottom:8px; display:block;">IA-2 Config</span>
+            <div class="marks-grid">
+              <div class="marks-group max-bg">
+                <label>Max Marks</label>
+                <input type="number" name="max_ia2" value="{{ ss.max_ia2|default:'20' }}" min="0" />
+              </div>
+              <div class="marks-group min-bg">
+                <label>Passing Min</label>
+                <input type="number" name="min_ia2" value="{{ ss.min_ia2|default:'8' }}" min="0" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEM -->
+      <div class="comp-card">
+        <div class="comp-header">
+          <input type="checkbox" name="has_sem" id="has_sem" class="form-check-input" {% if action == 'Create' or ss.has_sem %}checked{% endif %}>
+          <label for="has_sem">Semester End Exam (SEM)</label>
+        </div>
+        <div class="marks-grid" style="margin-top:16px;">
+          <div class="marks-group max-bg">
+            <label>Max Marks</label>
+            <input type="number" name="max_sem" value="{{ ss.max_sem|default:'60' }}" min="0" />
+          </div>
+          <div class="marks-group min-bg">
+            <label>Passing Min</label>
+            <input type="number" name="min_sem" value="{{ ss.min_sem|default:'24' }}" min="0" />
+          </div>
+        </div>
+      </div>
+
+      <!-- TW -->
+      <div class="comp-card">
+        <div class="comp-header">
+          <input type="checkbox" name="has_tw" id="has_tw" class="form-check-input" {% if action == 'Create' and False %}{% elif ss and ss.has_tw %}checked{% endif %}>
+          <label for="has_tw">Term Work (TW)</label>
+        </div>
+        <div class="marks-grid" style="margin-top:16px;">
+          <div class="marks-group max-bg">
+            <label>Max Marks</label>
+            <input type="number" name="max_tw" value="{{ ss.max_tw|default:'25' }}" min="0" />
+          </div>
+          <div class="marks-group min-bg">
+            <label>Passing Min</label>
+            <input type="number" name="min_tw" value="{{ ss.min_tw|default:'10' }}" min="0" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Oral -->
+      <div class="comp-card">
+        <div class="comp-header">
+          <input type="checkbox" name="has_oral" id="has_oral" class="form-check-input" {% if action == 'Create' and False %}{% elif ss and ss.has_oral %}checked{% endif %}>
+          <label for="has_oral">Oral / Practical</label>
+        </div>
+        <div class="marks-grid" style="margin-top:16px;">
+          <div class="marks-group max-bg">
+            <label>Max Marks</label>
+            <input type="number" name="max_oral" value="{{ ss.max_oral|default:'25' }}" min="0" />
+          </div>
+          <div class="marks-group min-bg">
+            <label>Passing Min</label>
+            <input type="number" name="min_oral" value="{{ ss.min_oral|default:'10' }}" min="0" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display:flex; gap:16px; margin-top:32px; padding-top:24px; border-top:1px solid #e2e8f0;">
+      <button type="submit" class="btn btn-primary btn-lg" style="padding:12px 32px;"><i class="fas fa-save"></i> Save Configuration</button>
+      <a href="{% url 're_semester_subject_list' %}" class="btn btn-outline btn-lg" style="padding:12px 32px;">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Simple interactions for visual clarity
+  document.querySelectorAll('.form-check-input').forEach(checkbox => {
+    const updateCard = (cb) => {
+      const card = cb.closest('.comp-card');
+      if(cb.checked) {
+        card.style.opacity = '1';
+        card.style.filter = 'grayscale(0)';
+      } else {
+        card.style.opacity = '0.6';
+        card.style.filter = 'grayscale(0.8)';
+      }
+    };
+    checkbox.addEventListener('change', (e) => updateCard(e.target));
+    updateCard(checkbox); // init
+  });
+</script>
+{% endblock %}

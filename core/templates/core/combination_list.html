@@ -1,0 +1,47 @@
+{% extends 'core/base.html' %}
+{% block title %}Subject Combinations{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-project-diagram"></i> Subject Combinations</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Subject Combinations</h1>
+    <p class="page-subtitle">Subjects assigned per class</p>
+  </div>
+  <a href="{% url 'combination_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Combination</a>
+</div>
+
+{% if grouped %}
+  {% for cls, combos in grouped.items %}
+  <div class="section-card combo-group">
+    <div class="combo-group-header">
+      <div class="combo-class-badge">{{ cls.display_name }}</div>
+      <span class="combo-class-year">{{ cls.academic_year }}</span>
+      <span class="combo-count">{{ combos|length }} subject{{ combos|length|pluralize }}</span>
+    </div>
+    <div class="combo-subjects">
+      {% for combo in combos %}
+      <div class="combo-subject-tag">
+        <span>{{ combo.subject.display_name }}</span>
+        {% if combo.subject.code %}<small>{{ combo.subject.code }}</small>{% endif %}
+        <div class="combo-tag-actions">
+          <a href="{% url 'combination_edit' combo.pk %}" class="combo-action-btn" title="Edit"><i class="fas fa-pen"></i></a>
+          <a href="{% url 'combination_delete' combo.pk %}" class="combo-action-btn combo-del-btn" title="Remove"><i class="fas fa-xmark"></i></a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+<div class="section-card">
+  <div class="empty-state">
+    <i class="fas fa-project-diagram"></i>
+    <h3>No Combinations Yet</h3>
+    <p>Assign subjects to classes to create combinations.</p>
+    <a href="{% url 'combination_create' %}" class="btn btn-primary">Add Combination</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

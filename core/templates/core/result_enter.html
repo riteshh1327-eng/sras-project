@@ -1,0 +1,95 @@
+{% extends 'core/base.html' %}
+{% block title %}Enter Marks{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 'result_add' %}"><i class="fas fa-pen-to-square"></i> Add Results</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">Enter Marks</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Enter Marks</h1>
+    <p class="page-subtitle">
+      <span class="badge-class-sm">{{ student_class.display_name }}</span>
+      &mdash; <strong>{{ subject.display_name }}</strong>
+    </p>
+  </div>
+  <a href="{% url 'result_add' %}?class_id={{ student_class.pk }}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="section-card">
+  <div class="marks-legend">
+    <span class="legend-item"><span class="legend-dot ld-ia1"></span>IA-1 (max 20)</span>
+    <span class="legend-item"><span class="legend-dot ld-ia2"></span>IA-2 (max 20)</span>
+    <span class="legend-item"><span class="legend-dot ld-sem"></span>SEM (max 60)</span>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+    <table class="data-table marks-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Student</th>
+          <th>Roll ID</th>
+          <th class="marks-col">IA-1 <small>/20</small></th>
+          <th class="marks-col">IA-2 <small>/20</small></th>
+          <th class="marks-col">SEM <small>/60</small></th>
+          <th class="marks-col">Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for student, form in student_forms %}
+        <tr class="marks-row" data-row="{{ forloop.counter0 }}">
+          <td class="td-num">{{ forloop.counter }}</td>
+          <td class="student-name-td">{{ student.name }}</td>
+          <td><span class="badge-roll">{{ student.roll_id }}</span></td>
+          <td>{{ form.ia1_marks }}</td>
+          <td>{{ form.ia2_marks }}</td>
+          <td>{{ form.sem_marks }}</td>
+          <td class="marks-total" id="total-{{ forloop.counter0 }}">—</td>
+        </tr>
+        {% for field in form %}
+          {% if field.errors %}
+          <tr class="error-row"><td colspan="7">
+            <span class="form-error">{{ student.name }}: {{ field.label }} — {{ field.errors|join:", " }}</span>
+          </td></tr>
+          {% endif %}
+        {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="form-actions marks-submit">
+      <button type="submit" class="btn btn-primary btn-lg"><i class="fas fa-save"></i> Save All Results</button>
+      <a href="{% url 'result_add' %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Live total calculation
+function calcTotal(row) {
+  const ia1 = parseFloat(document.querySelector(`[name="form-${row}-ia1_marks"]`)?.value) || 0;
+  const ia2 = parseFloat(document.querySelector(`[name="form-${row}-ia2_marks"]`)?.value) || 0;
+  const sem = parseFloat(document.querySelector(`[name="form-${row}-sem_marks"]`)?.value) || 0;
+  const total = ia1 + ia2 + sem;
+  const el = document.getElementById(`total-${row}`);
+  if (el) {
+    el.textContent = total.toFixed(1);
+    el.className = 'marks-total ' + (total < 40 ? 'total-fail' : 'total-pass');
+  }
+}
+
+document.querySelectorAll('.marks-input').forEach(input => {
+  const row = input.closest('tr')?.dataset.row;
+  if (row !== undefined) {
+    input.addEventListener('input', () => calcTotal(parseInt(row)));
+    calcTotal(parseInt(row));
+  }
+});
+</script>
+{% endblock %}

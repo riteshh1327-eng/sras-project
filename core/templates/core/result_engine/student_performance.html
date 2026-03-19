@@ -1,0 +1,231 @@
+{% extends 'core/student/base_student.html' %}
+{% block title %}Performance Analytics{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-chart-line"></i> Performance Analytics</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Performance Analytics</h1>
+    <p class="page-subtitle">CGPA trend, subject analysis and grade breakdown — All semesters</p>
+  </div>
+  <div class="cgpa-hero-badge">
+    <span class="cgpa-num">{{ cgpa }}</span>
+    <span class="cgpa-label">CGPA</span>
+  </div>
+</div>
+
+{% if summaries %}
+
+<!-- Tab Nav -->
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="trend"><i class="fas fa-chart-line"></i> Trend Charts</button>
+  <button class="tab-btn" data-tab="comparison"><i class="fas fa-chart-bar"></i> Subject Comparison</button>
+  <button class="tab-btn" data-tab="grades"><i class="fas fa-chart-pie"></i> Grade Distribution</button>
+</div>
+
+<!-- ── Tab 1: SGPA/% Trend ── -->
+<div class="tab-panel active" id="tab-trend">
+  <div class="section-row">
+    <div class="section-card flex-2">
+      <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-line"></i> SGPA Trend Across Semesters</h2></div>
+      <div class="chart-wrap"><canvas id="sgpaTrendChart"></canvas></div>
+    </div>
+    <div class="section-card flex-1">
+      <div class="card-header"><h2 class="card-title"><i class="fas fa-percent"></i> Percentage Trend</h2></div>
+      <div class="chart-wrap"><canvas id="pctTrendChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-list"></i> Semester Summary Table</h2></div>
+    <table class="data-table">
+      <thead>
+        <tr><th>Semester</th><th>Academic Year</th><th>% Marks</th><th>SGPA</th><th>Credits</th><th>Subjects Failed</th><th>Result</th><th>Marksheet</th></tr>
+      </thead>
+      <tbody>
+        {% for s in summaries %}
+        <tr>
+          <td><strong>Semester {{ s.semester }}</strong></td>
+          <td>{{ s.academic_year }}</td>
+          <td>{{ s.percentage|floatformat:1 }}%</td>
+          <td><span class="sgpa-pill {% if s.sgpa >= 8 %}sgpa-high{% elif s.sgpa >= 6 %}sgpa-mid{% else %}sgpa-low{% endif %}">{{ s.sgpa }}</span></td>
+          <td>{{ s.earned_credits }} / {{ s.total_credits }}</td>
+          <td>{% if s.subjects_failed %}<span class="status-badge status-fail">{{ s.subjects_failed }}</span>{% else %}<span style="color:var(--gray-400)">—</span>{% endif %}</td>
+          <td>{% if s.result == 'Pass' %}<span class="status-badge status-pass">Pass</span>{% else %}<span class="status-badge status-fail">Fail</span>{% endif %}</td>
+          <td><a href="{% url 're_marksheet' s.semester s.academic_year %}" class="btn-icon btn-view"><i class="fas fa-file-lines"></i></a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Tab 2: Subject Comparison ── -->
+<div class="tab-panel" id="tab-comparison">
+  {% if latest_results %}
+  <div class="section-card">
+    <div class="card-header">
+      <h2 class="card-title"><i class="fas fa-chart-bar"></i> Subject Marks — Semester {{ latest_sem }}</h2>
+    </div>
+    <div class="chart-wrap chart-wrap-lg"><canvas id="subjCompChart"></canvas></div>
+  </div>
+  {% else %}
+  <div class="section-card"><div class="empty-state"><i class="fas fa-chart-bar"></i><h3>No Data</h3></div></div>
+  {% endif %}
+</div>
+
+<!-- ── Tab 3: Grade Distribution ── -->
+<div class="tab-panel" id="tab-grades">
+  <div class="section-row">
+    <div class="section-card flex-1">
+      <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-pie"></i> Grade Distribution</h2></div>
+      <div class="chart-wrap"><canvas id="gradeDonut"></canvas></div>
+    </div>
+    <div class="section-card flex-1">
+      <div class="card-header"><h2 class="card-title"><i class="fas fa-table"></i> Grades Breakdown</h2></div>
+      {% if latest_results %}
+      <table class="data-table">
+        <thead><tr><th>Subject</th><th>Total</th><th>%</th><th>Grade</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for r in latest_results %}
+          <tr>
+            <td>{{ r.semester_subject.subject.display_name }}</td>
+            <td><strong>{{ r.total|floatformat:1 }}</strong></td>
+            <td>{{ r.percentage|floatformat:1 }}%</td>
+            <td><span class="grade-badge grade-{{ r.grade }}">{{ r.grade }}</span></td>
+            <td>{% if r.status == 'Pass' %}<span class="status-badge status-pass">Pass</span>{% else %}<span class="status-badge status-fail">Fail</span>{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="section-card">
+  <div class="empty-state">
+    <i class="fas fa-chart-line"></i>
+    <h3>No Performance Data Yet</h3>
+    <p>Analytics will appear here once your teacher enters marks.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+Chart.defaults.color = '#64748b';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+
+const SEM_LABELS  = {{ sem_labels_json|safe }};
+const SGPA_VALS   = {{ sgpa_json|safe }};
+const PCT_VALS    = {{ pct_json|safe }};
+const SUBJ_LABELS = {{ subj_labels_json|safe }};
+const SUBJ_TOTALS = {{ subj_totals_json|safe }};
+const SUBJ_MAX    = {{ subj_max_json|safe }};
+const GRADE_DIST  = {{ grade_dist_json|safe }};
+
+// SGPA Trend
+new Chart(document.getElementById('sgpaTrendChart'), {
+  type: 'line',
+  data: {
+    labels: SEM_LABELS,
+    datasets: [{
+      label: 'SGPA',
+      data: SGPA_VALS,
+      borderColor: '#2563eb',
+      backgroundColor: 'rgba(37,99,235,0.1)',
+      pointBackgroundColor: '#2563eb',
+      pointRadius: 6,
+      tension: 0.35,
+      fill: true,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { min: 0, max: 10, grid: { color: 'rgba(100,116,139,0.1)' },
+           ticks: { callback: v => v.toFixed(1) } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// Percentage Trend
+new Chart(document.getElementById('pctTrendChart'), {
+  type: 'bar',
+  data: {
+    labels: SEM_LABELS,
+    datasets: [{
+      label: 'Percentage',
+      data: PCT_VALS,
+      backgroundColor: PCT_VALS.map(v => v >= 60 ? 'rgba(34,197,94,0.8)' : v >= 40 ? 'rgba(59,130,246,0.8)' : 'rgba(239,68,68,0.8)'),
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' } } }
+  }
+});
+
+// Subject Comparison
+if (document.getElementById('subjCompChart')) {
+  new Chart(document.getElementById('subjCompChart'), {
+    type: 'bar',
+    data: {
+      labels: SUBJ_LABELS,
+      datasets: [
+        { label: 'Marks Obtained', data: SUBJ_TOTALS,
+          backgroundColor: 'rgba(59,130,246,0.8)', borderRadius: 6 },
+        { label: 'Max Marks', data: SUBJ_MAX,
+          backgroundColor: 'rgba(226,232,240,0.6)', borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { position: 'top' } },
+      scales: { y: { grid: { color: 'rgba(100,116,139,0.1)' } }, x: { grid: { display: false } } }
+    }
+  });
+}
+
+// Grade Donut
+const gradeLabels = Object.keys(GRADE_DIST);
+const gradeVals   = Object.values(GRADE_DIST);
+const gradeColors = ['#059669','#16a34a','#22c55e','#3b82f6','#8b5cf6','#64748b','#ef4444'];
+new Chart(document.getElementById('gradeDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: gradeLabels,
+    datasets: [{
+      data: gradeVals,
+      backgroundColor: gradeColors,
+      borderWidth: 2, borderColor: '#f8fafc',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'right' } },
+    cutout: '65%'
+  }
+});
+
+// Tab switching
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    this.classList.add('active');
+    document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+  });
+});
+</script>
+{% endblock %}

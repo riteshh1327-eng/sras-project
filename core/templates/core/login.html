@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login — SRAS</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+</head>
+<body class="login-layout">
+  <div class="login-bg">
+    <div class="login-orb login-orb-1"></div>
+    <div class="login-orb login-orb-2"></div>
+  </div>
+
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon"><i class="fas fa-graduation-cap"></i></div>
+      <h1>SRAS</h1>
+      <p>Student Result Analysis System</p>
+    </div>
+
+    {% if messages %}
+    <div class="login-messages">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}">
+        <i class="fas fa-circle-{% if 'success' in message.tags %}check{% else %}xmark{% endif %}"></i>
+        {{ message }}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" class="login-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label><i class="fas fa-envelope"></i> Email Address</label>
+        <input type="email" name="email" class="form-control" placeholder="your@kceemsr.edu.in" required autofocus />
+      </div>
+      <div class="form-group">
+        <label><i class="fas fa-lock"></i> Password</label>
+        <input type="password" name="password" class="form-control" placeholder="Enter password" required />
+        <small class="form-hint">Students: use your Roll ID as password</small>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full">
+        <i class="fas fa-right-to-bracket"></i> Sign In
+      </button>
+    </form>
+
+    <div class="login-info-box">
+      <div class="li-row"><span class="li-label"><i class="fas fa-chalkboard-teacher"></i> Teachers</span><span>Email + your password</span></div>
+      <div class="li-row"><span class="li-label"><i class="fas fa-user-graduate"></i> Students</span><span>Email + Roll ID</span></div>
+    </div>
+
+    <div class="login-back">
+      <a href="{% url 'home' %}"><i class="fas fa-arrow-left"></i> Back to Home</a>
+    </div>
+  </div>
+</body>
+</html>

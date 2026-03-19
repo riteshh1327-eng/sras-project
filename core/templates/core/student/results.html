@@ -1,0 +1,124 @@
+{% extends 'core/student/base_student.html' %}
+{% block title %}My Results{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-clipboard-list"></i> My Results</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">My Results</h1>
+    <p class="page-subtitle">All semesters &amp; academic years — {{ student.name }}</p>
+  </div>
+  <a href="{% url 'student_export_csv' %}" class="btn btn-success">
+    <i class="fas fa-download"></i> Export CSV
+  </a>
+</div>
+
+{% if results %}
+
+{# Group results by academic_year + semester #}
+{% regroup results by semester_subject.academic_year as by_year %}
+
+{% for year_group in by_year %}
+  {% regroup year_group.list by semester_subject.semester as by_sem %}
+  {% for sem_group in by_sem %}
+
+  <div class="section-card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <h2 class="card-title">
+        <i class="fas fa-layer-group" style="color:var(--blue-500)"></i>
+        Semester {{ sem_group.grouper }}
+        <span class="badge-count" style="margin-left:8px;">{{ year_group.grouper }}</span>
+      </h2>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Subject</th>
+          <th>IA-1</th>
+          <th>IA-2</th>
+          <th>TW</th>
+          <th>Oral</th>
+          <th>SEM</th>
+          <th>Total</th>
+          <th>%</th>
+          <th>Grade</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in sem_group.list %}
+        <tr>
+          <td class="td-num">{{ forloop.counter }}</td>
+          <td>
+            <strong>{{ r.semester_subject.subject.display_name }}</strong>
+            {% if r.semester_subject.subject.code %}
+              <span class="badge-code">{{ r.semester_subject.subject.code }}</span>
+            {% endif %}
+          </td>
+          <td class="{% if r.is_fail_ia %}td-fail{% endif %}">
+            {% if r.semester_subject.has_ia %}{{ r.ia1|default:"—" }}{% else %}—{% endif %}
+          </td>
+          <td class="{% if r.is_fail_ia %}td-fail{% endif %}">
+            {% if r.semester_subject.has_ia %}{{ r.ia2|default:"—" }}{% else %}—{% endif %}
+          </td>
+          <td class="{% if r.is_fail_tw %}td-fail{% endif %}">
+            {% if r.semester_subject.has_tw %}{{ r.tw|default:"—" }}{% else %}—{% endif %}
+          </td>
+          <td class="{% if r.is_fail_oral %}td-fail{% endif %}">
+            {% if r.semester_subject.has_oral %}{{ r.oral|default:"—" }}{% else %}—{% endif %}
+          </td>
+          <td class="{% if r.is_fail_sem %}td-fail{% endif %}">
+            {% if r.semester_subject.has_sem %}{{ r.sem|default:"—" }}{% else %}—{% endif %}
+          </td>
+          <td><strong>{{ r.total }}</strong></td>
+          <td>{{ r.percentage }}%</td>
+          <td><span class="grade-badge grade-{{ r.grade }}">{{ r.grade }}</span></td>
+          <td>
+            {% if r.status == 'Pass' %}
+              <span class="status-badge status-pass"><i class="fas fa-check"></i> Pass</span>
+            {% elif r.status == 'Fail' %}
+              <span class="status-badge status-fail"><i class="fas fa-xmark"></i> Fail</span>
+            {% elif r.status == 'Absent' %}
+              <span class="status-badge status-fail">Absent</span>
+            {% else %}
+              <span class="status-badge">{{ r.status }}</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% endfor %}
+{% endfor %}
+
+{% else %}
+<div class="section-card">
+  <div class="empty-state">
+    <i class="fas fa-clipboard-list"></i>
+    <h3>No Results Yet</h3>
+    <p>Results will appear here once your teacher enters marks.</p>
+  </div>
+</div>
+{% endif %}
+
+{% if results %}
+<div class="section-row">
+  <div class="section-card flex-1">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-info-circle"></i> All Subjects Summary</h2></div>
+    <div class="summary-grid">
+      {% for r in results %}
+      <div class="summary-subject-pill {% if r.status == 'Fail' or r.status == 'Absent' %}spill-fail{% else %}spill-pass{% endif %}">
+        <span class="spill-name">{{ r.semester_subject.subject.display_name }}</span>
+        <span class="spill-grade">{{ r.grade }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,331 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Enter Marks — {{ ss.subject.display_name }}{% endblock %}
+
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 're_bulk_entry' %}">Bulk Entry</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">{{ ss.subject.display_name }} — {{ sel_comp|upper }}</span>
+{% endblock %}
+
+{% block content %}
+<style>
+  .info-bar {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .info-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .info-tag {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--gray-700);
+  }
+  .max-badge {
+    background: var(--blue-50);
+    color: var(--blue-700);
+    border: 1px solid var(--blue-200);
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-weight: 700;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  .marks-input {
+    width: 110px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 15px;
+    transition: box-shadow 0.15s;
+  }
+  .marks-input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  }
+  .marks-input.is-invalid {
+    border-color: var(--red-500);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+  }
+  .marks-row.is-absent td {
+    opacity: 0.45;
+  }
+  .marks-row.is-absent .marks-input {
+    background: #e2e8f0;
+  }
+  .footer-bar {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    background: white;
+    padding: 20px 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    margin-top: 24px;
+    flex-wrap: wrap;
+  }
+  .status-text {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+  .status-label {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--gray-500);
+  }
+  #validationMsg {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    color: var(--red-600);
+    font-weight: 600;
+    margin-left: auto;
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Enter Marks: {{ sel_comp|upper }}</h1>
+    <p class="page-subtitle">
+      <span class="badge-class-sm">{{ ss.student_class.display_name }}</span>
+      &nbsp;<i class="fas fa-book"></i> {{ ss.subject.display_name }}
+      &nbsp;<span class="badge-count">Sem {{ ss.semester }}</span>
+      &nbsp;{{ ss.academic_year }}
+    </p>
+  </div>
+  <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}" class="btn btn-outline">
+    <i class="fas fa-arrow-left"></i> Back
+  </a>
+</div>
+
+<div class="info-bar">
+  <div class="info-group">
+    <div class="info-tag"><i class="fas fa-users" style="color:var(--blue-500);margin-right:6px;"></i> {{ rows|length }} Students</div>
+    <div class="info-tag"><i class="fas fa-keyboard" style="color:var(--blue-500);margin-right:6px;"></i> Press Enter to jump to next row</div>
+  </div>
+  <div class="max-badge">
+    <i class="fas fa-bullseye"></i> Max Marks ({{ sel_comp|upper }}):
+    {% if sel_comp == 'ia1' %}{{ ss.max_ia1 }}
+    {% elif sel_comp == 'ia2' %}{{ ss.max_ia2 }}
+    {% elif sel_comp == 'tw' %}{{ ss.max_tw }}
+    {% elif sel_comp == 'oral' %}{{ ss.max_oral }}
+    {% elif sel_comp == 'sem' %}{{ ss.max_sem }}
+    {% else %}—{% endif %}
+  </div>
+</div>
+
+<form method="post" action="{% url 're_bulk_save' %}" id="bulkForm">
+  {% csrf_token %}
+  <input type="hidden" name="ss_id" value="{{ ss.pk }}">
+  <input type="hidden" name="component" value="{{ sel_comp }}">
+  {# Pass current_max to JS as a data attribute on form #}
+  <input type="hidden" id="maxMarksValue" value="
+    {% if sel_comp == 'ia1' %}{{ ss.max_ia1 }}
+    {% elif sel_comp == 'ia2' %}{{ ss.max_ia2 }}
+    {% elif sel_comp == 'tw' %}{{ ss.max_tw }}
+    {% elif sel_comp == 'oral' %}{{ ss.max_oral }}
+    {% elif sel_comp == 'sem' %}{{ ss.max_sem }}
+    {% else %}9999{% endif %}">
+
+  <div class="section-card" style="box-shadow: 0 4px 20px rgba(0,0,0,0.04);">
+    <div class="card-header" style="border-bottom: 1px solid #e2e8f0;">
+      <h2 class="card-title"><i class="fas fa-pen-to-square"></i> Class Results · {{ rows|length }} students</h2>
+      <div style="display:flex; gap:10px;">
+        <button type="button" class="btn btn-outline btn-sm" id="fillAbsent">
+          <i class="fas fa-user-xmark"></i> All Absent
+        </button>
+        <button type="button" class="btn btn-outline btn-sm" id="clearAll">
+          <i class="fas fa-eraser"></i> Clear All
+        </button>
+      </div>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table class="data-table" id="marksTable" style="margin: 0;">
+        <thead>
+          <tr>
+            <th style="width:5%">#</th>
+            <th style="width:15%">Roll ID</th>
+            <th>Student Name</th>
+            <th style="width:15%; text-align:center;">Previous</th>
+            <th style="width:18%; text-align:center;">
+              New Marks
+              <span style="font-size:11px; color:var(--gray-500); font-weight:400;">
+                (max:
+                {% if sel_comp == 'ia1' %}{{ ss.max_ia1 }}
+                {% elif sel_comp == 'ia2' %}{{ ss.max_ia2 }}
+                {% elif sel_comp == 'tw' %}{{ ss.max_tw }}
+                {% elif sel_comp == 'oral' %}{{ ss.max_oral }}
+                {% elif sel_comp == 'sem' %}{{ ss.max_sem }}
+                {% else %}—{% endif %})
+              </span>
+            </th>
+            <th style="width:10%; text-align:center;">Absent</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr class="marks-row {% if row.er and row.er.is_absent %}is-absent{% endif %}">
+            <td>{{ forloop.counter }}</td>
+            <td><span class="badge-roll">{{ row.enrollment.roll_id }}</span></td>
+            <td><strong>{{ row.enrollment.student.name }}</strong></td>
+            <td style="text-align:center;">
+              {% if row.current is not None %}
+                <span class="badge" style="background:#e2e8f0; color:#475569;">{{ row.current }}</span>
+              {% else %}
+                <span style="color:var(--gray-400);">—</span>
+              {% endif %}
+            </td>
+            <td style="text-align:center;">
+              <input
+                type="number"
+                name="marks_{{ row.enrollment.id }}"
+                class="form-control marks-input"
+                value="{{ row.current|default:'' }}"
+                min="0"
+                max="{% if sel_comp == 'ia1' %}{{ ss.max_ia1 }}{% elif sel_comp == 'ia2' %}{{ ss.max_ia2 }}{% elif sel_comp == 'tw' %}{{ ss.max_tw }}{% elif sel_comp == 'oral' %}{{ ss.max_oral }}{% elif sel_comp == 'sem' %}{{ ss.max_sem }}{% else %}9999{% endif %}"
+                step="0.5"
+                placeholder="—"
+                autocomplete="off"
+                {% if row.er and row.er.is_absent %}disabled{% endif %}
+              />
+            </td>
+            <td style="text-align:center; vertical-align:middle;">
+              <input
+                type="checkbox"
+                name="absent_{{ row.enrollment.id }}"
+                class="absent-cb"
+                {% if row.er and row.er.is_absent %}checked{% endif %}
+                style="width:20px; height:20px; accent-color: var(--orange-500); cursor:pointer;"
+              />
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="footer-bar">
+    <button type="submit" class="btn btn-primary btn-lg" id="submitBtn" style="padding: 12px 32px;">
+      <i class="fas fa-save"></i> Save All Results
+    </button>
+    <div>
+      <div class="status-label">Completion</div>
+      <div class="status-text" id="enteredCount">0 / {{ rows|length }} entered</div>
+    </div>
+    <div id="validationMsg">
+      <i class="fas fa-circle-exclamation"></i>
+      <span>Fix marks exceeding the maximum before saving.</span>
+    </div>
+  </div>
+</form>
+
+<script>
+(function () {
+  const MAX_MARKS = parseFloat(document.getElementById('maxMarksValue').value.trim()) || 9999;
+  const inputs = Array.from(document.querySelectorAll('.marks-input'));
+  const checkboxes = Array.from(document.querySelectorAll('.absent-cb'));
+  const countEl   = document.getElementById('enteredCount');
+  const submitBtn = document.getElementById('submitBtn');
+  const errMsg    = document.getElementById('validationMsg');
+  const total     = inputs.length;
+
+  function updateStatus() {
+    let entered = 0;
+    let hasError = false;
+
+    inputs.forEach(function (inp, i) {
+      var cb  = checkboxes[i];
+      var val = inp.value.trim();
+      if (val !== '' || (cb && cb.checked)) entered++;
+
+      if (val !== '' && !inp.disabled) {
+        var num = parseFloat(val);
+        if (isNaN(num) || num < 0 || num > MAX_MARKS) {
+          inp.classList.add('is-invalid');
+          hasError = true;
+        } else {
+          inp.classList.remove('is-invalid');
+        }
+      } else {
+        inp.classList.remove('is-invalid');
+      }
+    });
+
+    countEl.textContent = entered + ' / ' + total + ' entered';
+    submitBtn.disabled  = hasError;
+    errMsg.style.display = hasError ? 'flex' : 'none';
+  }
+
+  inputs.forEach(function (inp, idx) {
+    inp.addEventListener('input', updateStatus);
+
+    inp.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        for (var i = idx + 1; i < inputs.length; i++) {
+          if (!inputs[i].disabled) {
+            inputs[i].focus();
+            inputs[i].select();
+            return;
+          }
+        }
+        submitBtn.focus();
+      }
+    });
+  });
+
+  checkboxes.forEach(function (cb, idx) {
+    cb.addEventListener('change', function () {
+      var inp = inputs[idx];
+      var row = inp.closest('tr');
+      inp.disabled = cb.checked;
+      if (cb.checked) {
+        row.classList.add('is-absent');
+        inp.value = '';
+        inp.classList.remove('is-invalid');
+      } else {
+        row.classList.remove('is-absent');
+        inp.focus();
+      }
+      updateStatus();
+    });
+  });
+
+  document.getElementById('fillAbsent').onclick = function () {
+    checkboxes.forEach(function (cb) {
+      if (!cb.checked) { cb.checked = true; cb.dispatchEvent(new Event('change')); }
+    });
+  };
+
+  document.getElementById('clearAll').onclick = function () {
+    checkboxes.forEach(function (cb) {
+      if (cb.checked) { cb.checked = false; cb.dispatchEvent(new Event('change')); }
+    });
+    inputs.forEach(function (inp) { inp.value = ''; inp.classList.remove('is-invalid'); });
+    updateStatus();
+  };
+
+  updateStatus();
+}());
+</script>
+{% endblock %}

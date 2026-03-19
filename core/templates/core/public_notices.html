@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notice Board — SRAS</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/public.css" />
+</head>
+<body class="public-layout">
+  <nav class="pub-nav">
+    <div class="pub-nav-inner">
+      <div class="pub-logo"><i class="fas fa-graduation-cap"></i><span>SRAS</span></div>
+      <div class="pub-nav-links">
+        <a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="btn-nav-primary">Dashboard</a>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn-nav-primary">Login</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+  <div class="pub-page-content">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="notice-badge"><i class="fas fa-bell"></i> Announcements</div>
+        <h2>Notice Board</h2>
+        <p>All active notices and announcements</p>
+      </div>
+      {% if notices %}
+      <div class="notices-grid">
+        {% for notice in notices %}
+        <div class="notice-card">
+          <div class="notice-card-header">
+            <span class="notice-date"><i class="fas fa-calendar"></i> {{ notice.created_at|date:"d M Y" }}</span>
+          </div>
+          <h3 class="notice-card-title">{{ notice.title }}</h3>
+          <p class="notice-card-body">{{ notice.content }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-notices"><i class="fas fa-bell-slash"></i><p>No notices at this time.</p></div>
+      {% endif %}
+    </div>
+  </div>
+  <footer class="pub-footer">
+    <div class="footer-inner">
+      <div class="footer-logo"><i class="fas fa-graduation-cap"></i> SRAS</div>
+      <p>Student Result Analysis System</p>
+    </div>
+  </footer>
+</body>
+</html>

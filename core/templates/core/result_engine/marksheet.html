@@ -1,0 +1,210 @@
+{% extends 'core/student/base_student.html' %}
+{% block title %}Marksheet — Semester {{ semester }}{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 'student_result_explorer' %}">Results</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">Marksheet — Semester {{ semester }}</span>
+{% endblock %}
+{% block extra_css %}
+<style>
+@media print {
+  .sidebar, .topbar, .no-print { display: none !important; }
+  .main-content { margin-left: 0 !important; }
+  .marksheet-card { box-shadow: none; border: 1px solid #ccc; }
+  body { background: white; }
+  .page-content { padding: 0; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header no-print">
+  <div>
+    <h1 class="page-title">Semester {{ semester }} Marksheet</h1>
+    <p class="page-subtitle">{{ academic_year }} — {{ enrollment.student_class }}</p>
+  </div>
+  <div style="display:flex; gap:10px;">
+    <button onclick="window.print()" class="btn btn-outline no-print">
+      <i class="fas fa-print"></i> Print
+    </button>
+    <a href="{% url 're_marksheet_pdf' semester academic_year student.pk %}" class="btn btn-primary no-print">
+      <i class="fas fa-file-pdf"></i> Download PDF
+    </a>
+  </div>
+</div>
+
+<div class="marksheet-card" id="marksheetPrint">
+
+  <!-- Header -->
+  <div class="ms-header">
+    <div class="ms-logo-row">
+      <div class="ms-logo-icon"><i class="fas fa-university"></i></div>
+      <div>
+        <h1 class="ms-college-name">K.C. College of Engineering & Management Studies and Research</h1>
+        <p class="ms-college-sub">Affiliated to University of Mumbai | Autonomous Institute</p>
+      </div>
+    </div>
+    <div class="ms-title-row">
+      <h2 class="ms-title">SEMESTER EXAMINATION RESULT</h2>
+      <div class="ms-ay-badge">A.Y. {{ academic_year }}</div>
+    </div>
+  </div>
+
+  <!-- Student Info -->
+  <div class="ms-student-info">
+    <div class="ms-info-grid">
+      <div class="ms-info-item">
+        <span class="ms-info-label">Student Name</span>
+        <span class="ms-info-val">{{ student.name }}</span>
+      </div>
+      <div class="ms-info-item">
+        <span class="ms-info-label">Roll Number</span>
+        <span class="ms-info-val ms-mono">{{ enrollment.roll_id }}</span>
+      </div>
+      <div class="ms-info-item">
+        <span class="ms-info-label">Class</span>
+        <span class="ms-info-val">{{ enrollment.student_class }}</span>
+      </div>
+      <div class="ms-info-item">
+        <span class="ms-info-label">Semester</span>
+        <span class="ms-info-val">Semester {{ semester }}</span>
+      </div>
+      <div class="ms-info-item">
+        <span class="ms-info-label">Academic Year</span>
+        <span class="ms-info-val">{{ academic_year }}</span>
+      </div>
+      {% if student.date_of_birth %}
+      <div class="ms-info-item">
+        <span class="ms-info-label">Date of Birth</span>
+        <span class="ms-info-val">{{ student.date_of_birth|date:"d/m/Y" }}</span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Results Table -->
+  <div class="ms-table-wrap">
+    <table class="ms-table">
+      <thead>
+        <tr>
+          <th rowspan="2" style="width:50px;">Sr.</th>
+          <th rowspan="2">Subject Code</th>
+          <th rowspan="2">Subject Name</th>
+          <th rowspan="2" style="width:60px;">Credits</th>
+          <th colspan="2">Internal Assessment</th>
+          {% if results.0.semester_subject.has_tw %}<th rowspan="2">TW</th>{% endif %}
+          {% if results.0.semester_subject.has_oral %}<th rowspan="2">Oral</th>{% endif %}
+          <th rowspan="2">SEM</th>
+          <th rowspan="2">Total</th>
+          <th rowspan="2">%</th>
+          <th rowspan="2">Grade</th>
+          <th rowspan="2">Points</th>
+          <th rowspan="2">Status</th>
+        </tr>
+        <tr>
+          <th>IA-1</th>
+          <th>IA-2</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in results %}
+        <tr class="{% if r.status == 'Fail' %}ms-row-fail{% elif r.status == 'Absent' %}ms-row-absent{% endif %}">
+          <td class="ms-center">{{ forloop.counter }}</td>
+          <td class="ms-mono">{{ r.semester_subject.subject.code|default:"—" }}</td>
+          <td class="ms-subj-name">{{ r.semester_subject.subject.display_name }}</td>
+          <td class="ms-center">{{ r.semester_subject.credits }}</td>
+          {% if r.semester_subject.has_ia %}
+          <td class="ms-center {% if r.is_fail_ia %}ms-fail-cell{% endif %}">{{ r.ia1|default:"—"|floatformat:1 }}</td>
+          <td class="ms-center {% if r.is_fail_ia %}ms-fail-cell{% endif %}">{{ r.ia2|default:"—"|floatformat:1 }}</td>
+          {% else %}
+          <td class="ms-center ms-na">N/A</td>
+          <td class="ms-center ms-na">N/A</td>
+          {% endif %}
+          {% if results.0.semester_subject.has_tw %}
+          <td class="ms-center {% if r.is_fail_tw %}ms-fail-cell{% endif %}">{{ r.tw|default:"—"|floatformat:1 }}</td>
+          {% endif %}
+          {% if results.0.semester_subject.has_oral %}
+          <td class="ms-center {% if r.is_fail_oral %}ms-fail-cell{% endif %}">{{ r.oral|default:"—"|floatformat:1 }}</td>
+          {% endif %}
+          <td class="ms-center {% if r.is_fail_sem %}ms-fail-cell{% endif %}">{{ r.sem|default:"—"|floatformat:1 }}</td>
+          <td class="ms-center ms-bold">{{ r.total|floatformat:1 }}</td>
+          <td class="ms-center">{{ r.percentage|floatformat:1 }}%</td>
+          <td class="ms-center">
+            <span class="ms-grade ms-grade-{{ r.grade }}">{{ r.grade }}</span>
+          </td>
+          <td class="ms-center ms-bold">{{ r.grade_points|floatformat:1 }}</td>
+          <td class="ms-center">
+            {% if r.status == 'Pass' %}<span class="ms-pass">PASS</span>
+            {% elif r.status == 'Absent' %}<span class="ms-absent">AB</span>
+            {% else %}<span class="ms-fail">FAIL</span>{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="14" style="text-align:center; padding:20px; color:var(--gray-400);">No results found for this semester.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Summary -->
+  {% if summary %}
+  <div class="ms-summary">
+    <div class="ms-summary-grid">
+      <div class="ms-sum-item">
+        <span class="ms-sum-label">Total Credits</span>
+        <span class="ms-sum-val">{{ summary.total_credits }}</span>
+      </div>
+      <div class="ms-sum-item">
+        <span class="ms-sum-label">Credits Earned</span>
+        <span class="ms-sum-val">{{ summary.earned_credits }}</span>
+      </div>
+      <div class="ms-sum-item">
+        <span class="ms-sum-label">Total Marks</span>
+        <span class="ms-sum-val">{{ summary.total_marks|floatformat:1 }} / {{ summary.max_marks|floatformat:0 }}</span>
+      </div>
+      <div class="ms-sum-item">
+        <span class="ms-sum-label">Percentage</span>
+        <span class="ms-sum-val">{{ summary.percentage|floatformat:2 }}%</span>
+      </div>
+      <div class="ms-sum-item">
+        <span class="ms-sum-label">SGPA</span>
+        <span class="ms-sum-val ms-sgpa">{{ summary.sgpa }}</span>
+      </div>
+      <div class="ms-sum-item">
+        <span class="ms-sum-label">CGPA</span>
+        <span class="ms-sum-val ms-sgpa">{{ cgpa }}</span>
+      </div>
+      <div class="ms-sum-item">
+        <span class="ms-sum-label">Semester Result</span>
+        <span class="ms-sum-val">
+          {% if summary.result == 'Pass' %}
+          <span class="ms-pass ms-result-lg">PASS</span>
+          {% else %}
+          <span class="ms-fail ms-result-lg">FAIL</span>
+          {% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Grade Scale -->
+  <div class="ms-grade-scale">
+    <p class="ms-gs-title">Grade Scale (University of Mumbai)</p>
+    <div class="ms-gs-row">
+      {% for g in grade_scale %}
+      <div class="ms-gs-item">
+        <span class="ms-grade ms-grade-{{ g.grade }}">{{ g.grade }}</span>
+        <span>{{ g.min_percentage|floatformat:0 }}%–{{ g.max_percentage|floatformat:0 }}%</span>
+        <span>{{ g.grade_points }} pts</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="ms-footer">
+    <p>This is a computer-generated statement of result. Printed on {% now "d/m/Y H:i" %}</p>
+  </div>
+
+</div>
+{% endblock %}

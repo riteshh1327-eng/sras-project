@@ -1,0 +1,88 @@
+{% extends 'core/base.html' %}
+{% block title %}Bulk Result Entry{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-keyboard"></i> Bulk Result Entry</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Bulk Result Entry</h1>
+    <p class="page-subtitle">Select class, semester, subject and component to enter marks</p>
+  </div>
+</div>
+
+<div class="form-card" style="max-width:860px;">
+  <h3 style="font-size:15px; font-weight:700; margin-bottom:20px; color:var(--gray-700);">
+    <i class="fas fa-filter" style="color:var(--blue-500);"></i> Step 1 — Select Target
+  </h3>
+
+  <form method="get" action="{% url 're_bulk_entry' %}">
+    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-bottom:20px;">
+      <div class="form-group" style="margin:0;">
+        <label class="form-label">Academic Year</label>
+        <select name="year" class="form-control" id="yearSel" required>
+          <option value="">— Select —</option>
+          {% for yr in academic_years %}
+          <option value="{{ yr }}" {% if sel_year == yr %}selected{% endif %}>{{ yr }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label class="form-label">Class</label>
+        <select name="class_id" class="form-control" required>
+          <option value="">— Select —</option>
+          {% for cls in classes %}
+          <option value="{{ cls.pk }}" {% if sel_cls == cls.pk|stringformat:"s" %}selected{% endif %}>{{ cls }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group" style="margin:0;">
+        <label class="form-label">Semester</label>
+        <select name="sem" class="form-control" required>
+          <option value="">— Select —</option>
+          {% for val, label in sem_list %}
+          <option value="{{ val }}" {% if sel_sem == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Load Subjects</button>
+  </form>
+
+  {% if semester_subjects %}
+  <div style="border-top:1px solid var(--gray-200); margin-top:24px; padding-top:20px;">
+    <h3 style="font-size:15px; font-weight:700; margin-bottom:16px; color:var(--gray-700);">
+      <i class="fas fa-book" style="color:var(--blue-500);"></i> Step 2 — Select Subject & Component
+    </h3>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px;">
+      {% for ss in semester_subjects %}
+      <div class="subject-select-card">
+        <div class="ssc-name">{{ ss.subject.display_name }}</div>
+        <div class="ssc-meta">
+          {% if ss.subject.code %}<span class="badge-code">{{ ss.subject.code }}</span>{% endif %}
+          <span class="badge-count">{{ ss.credits }} cr</span>
+        </div>
+        <div class="ssc-components">
+          {% if ss.has_ia %}
+          <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&ss_id={{ ss.pk }}&component=ia1" class="comp-btn comp-blue">IA-1 /{{ ss.max_ia1 }}</a>
+          <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&ss_id={{ ss.pk }}&component=ia2" class="comp-btn comp-purple">IA-2 /{{ ss.max_ia2 }}</a>
+          {% endif %}
+          {% if ss.has_sem %}
+          <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&ss_id={{ ss.pk }}&component=sem" class="comp-btn comp-green">SEM /{{ ss.max_sem }}</a>
+          {% endif %}
+          {% if ss.has_tw %}
+          <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&ss_id={{ ss.pk }}&component=tw" class="comp-btn comp-teal">TW /{{ ss.max_tw }}</a>
+          {% endif %}
+          {% if ss.has_oral %}
+          <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&ss_id={{ ss.pk }}&component=oral" class="comp-btn comp-orange">Oral /{{ ss.max_oral }}</a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

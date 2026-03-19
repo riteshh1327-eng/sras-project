@@ -1,0 +1,237 @@
+/* ============================================================
+   SRAS — Student Portal Styles
+   ============================================================ */
+
+/* Student sidebar accent color */
+.student-sidebar .logo-icon,
+.student-sidebar .nav-item.active {
+  background: #7c3aed;
+}
+.student-sidebar .nav-item.active { background: #7c3aed; }
+.student-logo-icon { background: #7c3aed !important; }
+
+/* Student chip in sidebar */
+.student-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255,255,255,0.04);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin: 0;
+}
+
+.student-chip-avatar {
+  width: 36px; height: 36px;
+  background: #7c3aed;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 800; color: white;
+  flex-shrink: 0;
+}
+
+.student-chip-info { display: flex; flex-direction: column; overflow: hidden; }
+.sc-name { font-size: 13px; font-weight: 700; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-email { font-size: 11px; color: var(--gray-400); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Role chip */
+.role-chip {
+  font-size: 10.5px; font-weight: 700;
+  padding: 2px 8px; border-radius: 99px;
+  background: rgba(37,99,235,0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(37,99,235,0.25);
+  margin-left: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.role-student { background: rgba(124,58,237,0.15); color: #c4b5fd; border-color: rgba(124,58,237,0.25); }
+
+/* Student topbar */
+.student-topbar { border-bottom-color: #e9d5ff; }
+
+/* ============================================================
+   MARKS BREAKDOWN (subject detail)
+   ============================================================ */
+
+.marks-breakdown { padding: 20px; }
+
+.mb-component { margin-bottom: 24px; }
+.mb-component:last-child { margin-bottom: 0; }
+
+.mb-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.mb-label { font-size: 14px; font-weight: 600; color: var(--gray-700); }
+.mb-score { font-size: 16px; font-weight: 800; color: var(--gray-900); }
+.mb-fail { color: var(--red-600); }
+.mb-fail-note { font-size: 12px; color: var(--red-600); margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+
+.progress-bar-wrap {
+  width: 100%;
+  height: 14px;
+  background: var(--gray-100);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: 99px;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 8px;
+  min-width: 30px;
+  transition: width 0.6s ease;
+  position: relative;
+}
+
+.pb-blue   { background: linear-gradient(90deg, #3b82f6, #2563eb); }
+.pb-purple { background: linear-gradient(90deg, #a855f7, #7c3aed); }
+.pb-teal   { background: linear-gradient(90deg, #14b8a6, #0d9488); }
+
+.pb-pct { font-size: 10px; font-weight: 700; color: white; }
+
+/* ============================================================
+   RESULT FINAL DISPLAY
+   ============================================================ */
+
+.result-final-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px;
+  gap: 12px;
+  text-align: center;
+}
+
+.rfd-total { display: flex; align-items: baseline; gap: 4px; }
+.rfd-num { font-size: 48px; font-weight: 900; color: var(--gray-900); line-height: 1; }
+.rfd-denom { font-size: 20px; color: var(--gray-400); }
+
+.rfd-pct { font-size: 22px; font-weight: 700; color: var(--gray-600); }
+.rfd-grade { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.rfd-grade-label { font-size: 13px; color: var(--gray-500); }
+
+.grade-lg { font-size: 16px; padding: 6px 18px; }
+.status-lg { font-size: 14px; padding: 8px 20px; }
+
+/* ============================================================
+   TAB NAVIGATION
+   ============================================================ */
+
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 8px 12px;
+  margin-bottom: 0;
+  overflow-x: auto;
+}
+
+.tab-btn {
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: none;
+  font-size: 14px; font-weight: 600;
+  color: var(--gray-500);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.tab-btn:hover { color: var(--blue-600); background: var(--blue-50); }
+.tab-btn.active { background: var(--blue-600); color: white; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ============================================================
+   CHART
+   ============================================================ */
+
+.chart-wrap { padding: 16px; position: relative; height: 260px; }
+.chart-wrap-lg { height: 340px; }
+
+/* ============================================================
+   NOTICES (student)
+   ============================================================ */
+
+.notices-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.notice-detail-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid #7c3aed;
+}
+
+.ndc-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.ndc-date { font-size: 12.5px; color: var(--gray-400); display: flex; align-items: center; gap: 6px; }
+.ndc-title { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+.ndc-body { font-size: 14px; color: var(--gray-600); line-height: 1.65; }
+
+/* ============================================================
+   NOTICES STRIP (dashboard)
+   ============================================================ */
+
+.notices-strip { padding: 4px 16px; }
+
+.notice-strip-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--gray-100);
+}
+.notice-strip-item:last-child { border-bottom: none; }
+
+.nsi-dot { width: 8px; height: 8px; background: #7c3aed; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.nsi-content { flex: 1; }
+.nsi-title { display: block; font-size: 14px; font-weight: 600; color: var(--gray-800); }
+.nsi-date { display: block; font-size: 12px; color: var(--gray-400); margin-top: 2px; }
+
+/* ============================================================
+   SUMMARY PILLS (results page)
+   ============================================================ */
+
+.summary-grid { display: flex; flex-wrap: wrap; gap: 10px; padding: 16px; }
+
+.summary-subject-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px;
+  border-radius: 99px;
+  font-size: 13.5px; font-weight: 600;
+  border: 1.5px solid;
+}
+.spill-pass { background: var(--green-100); color: var(--green-600); border-color: #bbf7d0; }
+.spill-fail { background: var(--red-100); color: var(--red-600); border-color: #fecaca; }
+.spill-grade { font-family: var(--font-mono); font-size: 12px; background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; }
+
+/* ============================================================
+   PATTERN ANALYSIS
+   ============================================================ */
+
+.failed-subj-list { font-size: 12.5px; color: var(--red-600); font-weight: 500; }
+
+/* Login info box */
+.login-info-box {
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-top: 20px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.li-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--gray-600); }
+.li-label { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.li-label i { color: var(--blue-500); }

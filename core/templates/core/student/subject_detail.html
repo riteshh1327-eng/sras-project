@@ -1,0 +1,105 @@
+{% extends 'core/student/base_student.html' %}
+{% block title %}{{ subject.display_name }}{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 'student_results' %}"><i class="fas fa-clipboard-list"></i> Results</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">{{ subject.display_name }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ subject.display_name }}</h1>
+    <p class="page-subtitle">
+      {% if subject.code %}<span class="badge-code">{{ subject.code }}</span>{% endif %}
+      Detailed marks breakdown
+    </p>
+  </div>
+  <a href="{% url 'student_results' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="section-row">
+  <!-- Marks Breakdown -->
+  <div class="section-card flex-2">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-bar"></i> Marks Breakdown</h2></div>
+    <div class="marks-breakdown">
+
+      <div class="mb-component">
+        <div class="mb-header">
+          <span class="mb-label">Internal Assessment 1 (IA-1)</span>
+          <span class="mb-score {% if result.is_fail_ia1 %}mb-fail{% endif %}">{{ result.ia1_marks }} / 20</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar pb-blue" style="width: {{ ia1_pct }}%">
+            <span class="pb-pct">{{ ia1_pct }}%</span>
+          </div>
+        </div>
+        {% if result.is_fail_ia1 %}<span class="mb-fail-note"><i class="fas fa-triangle-exclamation"></i> Below pass mark (8/20)</span>{% endif %}
+      </div>
+
+      <div class="mb-component">
+        <div class="mb-header">
+          <span class="mb-label">Internal Assessment 2 (IA-2)</span>
+          <span class="mb-score {% if result.is_fail_ia2 %}mb-fail{% endif %}">{{ result.ia2_marks }} / 20</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar pb-purple" style="width: {{ ia2_pct }}%">
+            <span class="pb-pct">{{ ia2_pct }}%</span>
+          </div>
+        </div>
+        {% if result.is_fail_ia2 %}<span class="mb-fail-note"><i class="fas fa-triangle-exclamation"></i> Below pass mark (8/20)</span>{% endif %}
+      </div>
+
+      <div class="mb-component">
+        <div class="mb-header">
+          <span class="mb-label">Semester End Examination (SEM)</span>
+          <span class="mb-score {% if result.is_fail_sem %}mb-fail{% endif %}">{{ result.sem_marks }} / 60</span>
+        </div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar pb-teal" style="width: {{ sem_pct }}%">
+            <span class="pb-pct">{{ sem_pct }}%</span>
+          </div>
+        </div>
+        {% if result.is_fail_sem %}<span class="mb-fail-note"><i class="fas fa-triangle-exclamation"></i> Below pass mark (24/60)</span>{% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Result Summary Card -->
+  <div class="flex-1" style="display:flex; flex-direction:column; gap:16px;">
+    <div class="section-card">
+      <div class="card-header"><h2 class="card-title"><i class="fas fa-trophy"></i> Final Result</h2></div>
+      <div class="result-final-display">
+        <div class="rfd-total">
+          <span class="rfd-num">{{ result.total }}</span>
+          <span class="rfd-denom">/100</span>
+        </div>
+        <div class="rfd-pct">{{ result.percentage }}%</div>
+        <div class="rfd-grade">
+          <span class="grade-badge grade-{{ result.grade }} grade-lg">{{ result.grade }}</span>
+          <span class="rfd-grade-label">{{ result.grade_label }}</span>
+        </div>
+        <div class="rfd-status">
+          {% if result.status == 'Pass' %}
+          <span class="status-badge status-pass status-lg"><i class="fas fa-circle-check"></i> PASS</span>
+          {% else %}
+          <span class="status-badge status-fail status-lg"><i class="fas fa-circle-xmark"></i> FAIL</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="card-header"><h2 class="card-title"><i class="fas fa-circle-info"></i> Subject Info</h2></div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">Subject</span><span class="info-value">{{ subject.display_name }}</span></div>
+        <div class="info-item"><span class="info-label">Code</span><span class="info-value">{{ subject.code|default:"N/A" }}</span></div>
+      </div>
+      {% if subject.description %}
+      <div style="padding: 12px 20px; color: var(--gray-500); font-size: 13.5px;">{{ subject.description }}</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

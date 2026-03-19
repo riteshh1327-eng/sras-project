@@ -1,0 +1,35 @@
+{% extends 'core/student/base_student.html' %}
+{% block title %}Notices{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-bell"></i> Notices</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Notice Board</h1>
+    <p class="page-subtitle">{{ notices|length }} active announcement{{ notices|length|pluralize }}</p>
+  </div>
+</div>
+{% if notices %}
+<div class="notices-card-grid">
+  {% for notice in notices %}
+  <div class="notice-detail-card">
+    <div class="ndc-header">
+      <span class="ndc-date"><i class="fas fa-calendar-alt"></i> {{ notice.created_at|date:"d M Y, h:i A" }}</span>
+      <span class="status-badge status-pass"><i class="fas fa-circle"></i> Active</span>
+    </div>
+    <h3 class="ndc-title">{{ notice.title }}</h3>
+    <p class="ndc-body">{{ notice.content }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="section-card">
+  <div class="empty-state">
+    <i class="fas fa-bell-slash"></i>
+    <h3>No Notices</h3>
+    <p>No active notices at this time.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

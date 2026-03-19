@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SRAS — Student Result Analysis System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  <link rel="stylesheet" href="/static/css/public.css" />
+</head>
+<body class="public-layout">
+
+  <!-- Public Navbar -->
+  <nav class="pub-nav">
+    <div class="pub-nav-inner">
+      <div class="pub-logo">
+        <i class="fas fa-graduation-cap"></i>
+        <span>SRAS</span>
+      </div>
+      <div class="pub-nav-links">
+        <a href="#notices">Notices</a>
+        <a href="#about">About</a>
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="btn-nav-primary"><i class="fas fa-chart-pie"></i> Dashboard</a>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn-nav-primary"><i class="fas fa-right-to-bracket"></i> Login</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="hero-orb hero-orb-1"></div>
+      <div class="hero-orb hero-orb-2"></div>
+      <div class="hero-grid"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge"><i class="fas fa-star"></i> Academic Excellence Platform</div>
+      <h1 class="hero-title">
+        Student Result
+        <em>Analysis System</em>
+      </h1>
+      <p class="hero-desc">
+        A modern platform for teachers to manage students, subjects, results, and academic notices — all in one place.
+      </p>
+      <div class="hero-actions">
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="btn-hero-primary"><i class="fas fa-chart-pie"></i> Go to Dashboard</a>
+        {% else %}
+        <a href="{% url 'login' %}" class="btn-hero-primary"><i class="fas fa-right-to-bracket"></i> Teacher Login</a>
+        {% endif %}
+        <a href="#notices" class="btn-hero-outline"><i class="fas fa-bell"></i> View Notices</a>
+      </div>
+    </div>
+
+    <!-- Stats Strip -->
+    <div class="hero-stats">
+      <div class="stat-item">
+        <span class="stat-num">{{ stats.classes }}</span>
+        <span class="stat-label">Classes</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">{{ stats.students }}</span>
+        <span class="stat-label">Students</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">{{ stats.subjects }}</span>
+        <span class="stat-label">Subjects</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-num">{{ stats.results }}</span>
+        <span class="stat-label">Results Recorded</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features" id="about">
+    <div class="section-inner">
+      <div class="section-header">
+        <h2>Everything Teachers Need</h2>
+        <p>Streamlined tools designed for academic management</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feat-icon"><i class="fas fa-layer-group"></i></div>
+          <h3>Class Management</h3>
+          <p>Organize students by year, section, and academic year with ease.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feat-icon"><i class="fas fa-book-open"></i></div>
+          <h3>Subject Tracking</h3>
+          <p>Manage subjects and assign them to specific classes through combinations.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feat-icon"><i class="fas fa-file-excel"></i></div>
+          <h3>Excel Bulk Upload</h3>
+          <p>Import hundreds of students in seconds using Excel spreadsheets.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feat-icon"><i class="fas fa-chart-bar"></i></div>
+          <h3>Result Analysis</h3>
+          <p>Enter IA-1, IA-2 and semester marks with filtering and sorting tools.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feat-icon"><i class="fas fa-bullhorn"></i></div>
+          <h3>Notice Board</h3>
+          <p>Post and manage announcements visible publicly or internally.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feat-icon"><i class="fas fa-shield-halved"></i></div>
+          <h3>Secure Access</h3>
+          <p>Role-based login for teachers with protected admin dashboard.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Notice Board -->
+  <section class="pub-notices" id="notices">
+    <div class="section-inner">
+      <div class="section-header">
+        <div class="notice-badge"><i class="fas fa-bell"></i> Latest Notices</div>
+        <h2>Notice Board</h2>
+        <p>Stay updated with important announcements</p>
+      </div>
+
+      {% if notices %}
+      <div class="notices-grid">
+        {% for notice in notices %}
+        <div class="notice-card">
+          <div class="notice-card-header">
+            <span class="notice-date"><i class="fas fa-calendar"></i> {{ notice.created_at|date:"d M Y" }}</span>
+            <span class="notice-active-dot"></span>
+          </div>
+          <h3 class="notice-card-title">{{ notice.title }}</h3>
+          <p class="notice-card-body">{{ notice.short_content }}</p>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="notices-footer">
+        <a href="{% url 'public_notices' %}" class="btn-view-all">View All Notices <i class="fas fa-arrow-right"></i></a>
+      </div>
+      {% else %}
+      <div class="empty-notices">
+        <i class="fas fa-bell-slash"></i>
+        <p>No active notices at this time.</p>
+      </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="pub-footer">
+    <div class="footer-inner">
+      <div class="footer-logo">
+        <i class="fas fa-graduation-cap"></i> SRAS
+      </div>
+      <p>Student Result Analysis System — Built for Academic Excellence</p>
+    </div>
+  </footer>
+
+</body>
+</html>

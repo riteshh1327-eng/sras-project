@@ -1,0 +1,272 @@
+{% extends 'core/base.html' %}
+{% block title %}Teacher Analytics{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-chart-mixed"></i> Teacher Analytics</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Teacher Analytics</h1>
+    <p class="page-subtitle">Class performance, failure rates and at-risk student identification</p>
+  </div>
+</div>
+
+<!-- Filter -->
+<div class="section-card filter-panel" style="margin-bottom:20px;">
+  <form method="get" class="filter-grid">
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">Academic Year</label>
+      <select name="year" class="form-control">
+        <option value="">— Select —</option>
+        {% for yr in academic_years %}
+        <option value="{{ yr }}" {% if sel_year == yr %}selected{% endif %}>{{ yr }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">Class</label>
+      <select name="class_id" class="form-control">
+        <option value="">— Select —</option>
+        {% for cls in classes %}
+        <option value="{{ cls.pk }}" {% if sel_cls == cls.pk|stringformat:"s" %}selected{% endif %}>{{ cls }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin:0;">
+      <label class="form-label">Semester</label>
+      <select name="sem" class="form-control">
+        <option value="">— Select —</option>
+        {% for val, label in sem_list %}
+        <option value="{{ val }}" {% if sel_sem == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="display:flex; align-items:flex-end; gap:8px;">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Load Analytics</button>
+      <a href="{% url 're_teacher_analytics' %}" class="btn btn-outline">Clear</a>
+    </div>
+  </form>
+</div>
+
+{% if analytics %}
+
+<!-- KPI Cards -->
+<div class="stats-grid">
+  <div class="stat-card stat-blue">
+    <div class="stat-card-icon"><i class="fas fa-users"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ analytics.total_students }}</span>
+      <span class="stat-card-label">Total Students</span>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-card-icon"><i class="fas fa-circle-check"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ analytics.pass_pct }}%</span>
+      <span class="stat-card-label">Class Pass Rate</span>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-card-icon"><i class="fas fa-star"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ analytics.class_avg_sgpa }}</span>
+      <span class="stat-card-label">Avg SGPA</span>
+    </div>
+  </div>
+  <div class="stat-card stat-red">
+    <div class="stat-card-icon"><i class="fas fa-triangle-exclamation"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ analytics.at_risk|length }}</span>
+      <span class="stat-card-label">At Risk Students</span>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Charts Row -->
+<div class="section-row">
+  <div class="section-card flex-1">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-pie"></i> Grade Distribution</h2></div>
+    <div class="chart-wrap"><canvas id="gradeChart"></canvas></div>
+  </div>
+  <div class="section-card flex-2">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-bar"></i> Subject Failure Rate</h2></div>
+    <div class="chart-wrap"><canvas id="failRateChart"></canvas></div>
+  </div>
+</div>
+
+<div class="section-row">
+  <div class="section-card flex-2">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-column"></i> Student SGPA Distribution</h2></div>
+    <div class="chart-wrap"><canvas id="sgpaDistChart"></canvas></div>
+  </div>
+  <div class="section-card flex-1">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-bar"></i> Subject Avg Marks</h2></div>
+    <div class="chart-wrap"><canvas id="subjAvgChart"></canvas></div>
+  </div>
+</div>
+
+<!-- At-Risk Students -->
+{% if analytics.at_risk %}
+<div class="section-card">
+  <div class="card-header">
+    <h2 class="card-title" style="color:var(--red-600);"><i class="fas fa-user-xmark"></i> At-Risk Students (2+ fails)</h2>
+    <span class="badge-count" style="background:var(--red-100); color:var(--red-600);">{{ analytics.at_risk|length }}</span>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Student</th><th>Roll ID</th><th>SGPA</th><th>%</th><th>Subjects Failed</th><th>Credits Earned</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      {% for s in analytics.at_risk %}
+      <tr class="at-risk-row">
+        <td><a href="{% url 'student_detail' s.enrollment.student.pk %}"><strong>{{ s.enrollment.student.name }}</strong></a></td>
+        <td><span class="badge-roll">{{ s.enrollment.roll_id }}</span></td>
+        <td><span class="sgpa-pill sgpa-low">{{ s.sgpa }}</span></td>
+        <td>{{ s.percentage|floatformat:1 }}%</td>
+        <td><span class="status-badge status-fail"><i class="fas fa-xmark"></i> {{ s.subjects_failed }}</span></td>
+        <td>{{ s.earned_credits }} / {{ s.total_credits }}</td>
+        <td>
+          <a href="{% url 're_marksheet' s.semester s.academic_year %}" class="btn btn-outline btn-sm">
+            <i class="fas fa-file-lines"></i> View
+          </a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- Subject Stats -->
+{% if analytics.subject_stats %}
+<div class="section-card">
+  <div class="card-header"><h2 class="card-title"><i class="fas fa-table"></i> Subject Performance Summary</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Subject</th><th>Avg Marks</th><th>Pass Count</th><th>Fail Count</th><th>Fail Rate</th><th>Risk Level</th></tr>
+    </thead>
+    <tbody>
+      {% for ss in analytics.subject_stats %}
+      <tr>
+        <td><strong>{{ ss.subject }}</strong></td>
+        <td>{{ ss.avg_marks }}</td>
+        <td><span class="status-badge status-pass">{{ ss.pass_count }}</span></td>
+        <td><span class="status-badge status-fail">{{ ss.fail_count }}</span></td>
+        <td>{{ ss.fail_pct }}%</td>
+        <td>
+          {% if ss.fail_pct >= 50 %}<span class="risk-badge risk-high">High Risk</span>
+          {% elif ss.fail_pct >= 25 %}<span class="risk-badge risk-medium">Medium</span>
+          {% else %}<span class="risk-badge risk-low">Low</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% else %}
+<div class="section-card">
+  <div class="empty-state">
+    <i class="fas fa-chart-mixed"></i>
+    <h3>Select a Class to View Analytics</h3>
+    <p>Choose an academic year, class and semester above to load analytics.</p>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+Chart.defaults.color = '#64748b';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+
+{% if analytics %}
+const SUBJ_NAMES = {{ subj_names_json|safe }};
+const SUBJ_FAIL  = {{ subj_fail_json|safe }};
+const SUBJ_AVG   = {{ subj_avg_json|safe }};
+const GRADE_DIST = {{ grade_dist_json|safe }};
+const STU_NAMES  = {{ student_names_json|safe }};
+const STU_SGPA   = {{ student_sgpa_json|safe }};
+
+// Grade Distribution Donut
+new Chart(document.getElementById('gradeChart'), {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys(GRADE_DIST),
+    datasets: [{
+      data: Object.values(GRADE_DIST),
+      backgroundColor: ['#059669','#16a34a','#22c55e','#3b82f6','#8b5cf6','#64748b','#ef4444'],
+      borderWidth: 2, borderColor: '#f8fafc',
+    }]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'right' } }, cutout: '60%' }
+});
+
+// Subject Fail Rate
+new Chart(document.getElementById('failRateChart'), {
+  type: 'bar',
+  data: {
+    labels: SUBJ_NAMES,
+    datasets: [{
+      label: 'Fail %',
+      data: SUBJ_FAIL,
+      backgroundColor: SUBJ_FAIL.map(v => v >= 50 ? 'rgba(239,68,68,0.8)' : v >= 25 ? 'rgba(249,115,22,0.8)' : 'rgba(59,130,246,0.8)'),
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: 'rgba(100,116,139,0.1)' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// SGPA Distribution (scatter/bar per student)
+new Chart(document.getElementById('sgpaDistChart'), {
+  type: 'bar',
+  data: {
+    labels: STU_NAMES,
+    datasets: [{
+      label: 'SGPA',
+      data: STU_SGPA,
+      backgroundColor: STU_SGPA.map(v => v >= 8 ? 'rgba(34,197,94,0.8)' : v >= 6 ? 'rgba(59,130,246,0.8)' : 'rgba(239,68,68,0.8)'),
+      borderRadius: 4,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { min: 0, max: 10, grid: { color: 'rgba(100,116,139,0.1)' } },
+      x: { ticks: { maxRotation: 45, font: { size: 11 } }, grid: { display: false } }
+    }
+  }
+});
+
+// Subject Average Marks
+new Chart(document.getElementById('subjAvgChart'), {
+  type: 'horizontalBar',
+  data: {
+    labels: SUBJ_NAMES,
+    datasets: [{
+      label: 'Avg Marks',
+      data: SUBJ_AVG,
+      backgroundColor: 'rgba(59,130,246,0.75)',
+      borderRadius: 4,
+    }]
+  },
+  options: { responsive: true, plugins: { legend: { display: false } },
+    scales: { x: { grid: { color: 'rgba(100,116,139,0.1)' } } }
+  }
+}).config.type = 'bar'; // horizontal via indexAxis
+{% endif %}
+</script>
+{% endblock %}

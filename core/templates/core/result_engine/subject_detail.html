@@ -1,0 +1,137 @@
+{% extends 'core/student/base_student.html' %}
+{% block title %}{{ ss.subject.display_name }} — Result Detail{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 'student_result_explorer' %}">Results</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">{{ ss.subject.display_name }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ ss.subject.display_name }}</h1>
+    <p class="page-subtitle">
+      {% if ss.subject.code %}<span class="badge-code">{{ ss.subject.code }}</span>{% endif %}
+      <span class="badge-count">{{ ss.credits }} Credits</span>
+      Semester {{ ss.semester }} | {{ ss.academic_year }}
+    </p>
+  </div>
+  <a href="{% url 'student_result_explorer' %}?sem={{ ss.semester }}&year={{ ss.academic_year }}" class="btn btn-outline no-print">
+    <i class="fas fa-arrow-left"></i> Back to Results
+  </a>
+</div>
+
+<div class="section-row">
+
+  <!-- Progress Bars -->
+  <div class="section-card flex-2">
+    <div class="card-header">
+      <h2 class="card-title"><i class="fas fa-chart-bar"></i> Marks Breakdown</h2>
+    </div>
+    <div class="subject-result-card">
+
+      {% for bar in bars %}
+      <div class="src-component">
+        <div class="src-comp-header">
+          <span class="src-comp-label">{{ bar.label }}</span>
+          <div style="display:flex; align-items:center; gap:10px;">
+            {% if bar.fail %}
+            <span class="fail-indicator"><i class="fas fa-triangle-exclamation"></i> Below pass</span>
+            {% endif %}
+            <span class="src-comp-score {% if bar.fail %}src-score-fail{% endif %}">
+              {{ bar.marks|default:"—"|floatformat:1 }} <span class="src-max">/ {{ bar.max }}</span>
+            </span>
+          </div>
+        </div>
+        <div class="src-progress-track">
+          <div class="src-progress-fill
+            {% if bar.pct < 40 %}src-fill-red
+            {% elif bar.pct < 60 %}src-fill-orange
+            {% elif bar.pct < 75 %}src-fill-blue
+            {% else %}src-fill-green{% endif %}"
+            style="width:{{ bar.pct }}%">
+          </div>
+        </div>
+        <div class="src-progress-labels">
+          <span>0</span>
+          <span style="color:var(--red-500); font-size:11px;">40% pass</span>
+          <span>{{ bar.max }}</span>
+        </div>
+      </div>
+      {% endfor %}
+
+      <!-- Total bar -->
+      <div class="src-component src-total-component">
+        <div class="src-comp-header">
+          <span class="src-comp-label" style="font-weight:800; font-size:15px;">TOTAL</span>
+          <span class="src-comp-score" style="font-size:20px; font-weight:900;">
+            {{ er.total|floatformat:1 }} <span class="src-max">/ {{ ss.max_total }}</span>
+          </span>
+        </div>
+        <div class="src-progress-track src-track-thick">
+          <div class="src-progress-fill
+            {% if total_pct < 40 %}src-fill-red
+            {% elif total_pct < 60 %}src-fill-orange
+            {% elif total_pct < 75 %}src-fill-blue
+            {% else %}src-fill-green{% endif %}"
+            style="width:{{ total_pct }}%">
+            <span class="src-pct-label">{{ total_pct }}%</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Result Summary -->
+  <div class="flex-1" style="display:flex; flex-direction:column; gap:16px;">
+
+    <div class="section-card result-verdict-card {% if er.status == 'Pass' %}verdict-pass{% elif er.status == 'Absent' %}verdict-absent{% else %}verdict-fail{% endif %}">
+      <div class="rv-grade">
+        <span class="rv-grade-letter">{{ er.grade }}</span>
+        <span class="rv-grade-name">{{ er.grade_points|floatformat:1 }} pts</span>
+      </div>
+      <div class="rv-pct">{{ er.percentage|floatformat:2 }}%</div>
+      <div class="rv-status">
+        {% if er.status == 'Pass' %}
+        <i class="fas fa-circle-check"></i> PASS
+        {% elif er.status == 'Absent' %}
+        <i class="fas fa-circle-exclamation"></i> ABSENT
+        {% else %}
+        <i class="fas fa-circle-xmark"></i> FAIL
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="card-header"><h2 class="card-title"><i class="fas fa-info-circle"></i> Subject Info</h2></div>
+      <div class="info-grid" style="padding:16px;">
+        <div class="info-item"><span class="info-label">Subject</span><span class="info-value">{{ ss.subject.display_name }}</span></div>
+        <div class="info-item"><span class="info-label">Code</span><span class="info-value">{{ ss.subject.code|default:"N/A" }}</span></div>
+        <div class="info-item"><span class="info-label">Credits</span><span class="info-value">{{ ss.credits }}</span></div>
+        <div class="info-item"><span class="info-label">Semester</span><span class="info-value">{{ ss.semester }}</span></div>
+        <div class="info-item"><span class="info-label">Max Marks</span><span class="info-value">{{ ss.max_total }}</span></div>
+      </div>
+      {% if ss.subject.description %}
+      <div style="padding:0 16px 16px; color:var(--gray-500); font-size:13.5px; border-top:1px solid var(--gray-100); padding-top:12px; margin-top:0;">
+        {{ ss.subject.description }}
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Fail analysis -->
+    {% if er.status == 'Fail' %}
+    <div class="section-card fail-analysis-card">
+      <div class="card-header"><h2 class="card-title" style="color:var(--red-600);"><i class="fas fa-triangle-exclamation"></i> Fail Analysis</h2></div>
+      <div style="padding:16px; display:flex; flex-direction:column; gap:8px;">
+        {% if er.is_fail_ia %}<div class="fail-reason"><i class="fas fa-xmark"></i> Internal Assessment below pass mark</div>{% endif %}
+        {% if er.is_fail_sem %}<div class="fail-reason"><i class="fas fa-xmark"></i> SEM Exam below pass mark (40% of {{ ss.max_sem }})</div>{% endif %}
+        {% if er.is_fail_tw %}<div class="fail-reason"><i class="fas fa-xmark"></i> Term Work below pass mark</div>{% endif %}
+        {% if er.is_fail_oral %}<div class="fail-reason"><i class="fas fa-xmark"></i> Oral/Practical below pass mark</div>{% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
