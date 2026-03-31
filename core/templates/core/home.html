@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SRAS — Student Result Analysis System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="/static/css/main.css" />
   <link rel="stylesheet" href="/static/css/public.css" />
 </head>
+
 <body class="public-layout">
 
   <!-- Public Navbar -->
@@ -51,7 +55,7 @@
         {% if request.user.is_authenticated %}
         <a href="{% url 'dashboard' %}" class="btn-hero-primary"><i class="fas fa-chart-pie"></i> Go to Dashboard</a>
         {% else %}
-        <a href="{% url 'login' %}" class="btn-hero-primary"><i class="fas fa-right-to-bracket"></i> Teacher Login</a>
+        <a href="{% url 'login' %}" class="btn-hero-primary"><i class="fas fa-right-to-bracket"></i> Login</a>
         {% endif %}
         <a href="#notices" class="btn-hero-outline"><i class="fas fa-bell"></i> View Notices</a>
       </div>
@@ -146,7 +150,8 @@
         {% endfor %}
       </div>
       <div class="notices-footer">
-        <a href="{% url 'public_notices' %}" class="btn-view-all">View All Notices <i class="fas fa-arrow-right"></i></a>
+        <a href="{% url 'public_notices' %}" class="btn-view-all">View All Notices <i
+            class="fas fa-arrow-right"></i></a>
       </div>
       {% else %}
       <div class="empty-notices">
@@ -168,4 +173,5 @@
   </footer>
 
 </body>
+
 </html>

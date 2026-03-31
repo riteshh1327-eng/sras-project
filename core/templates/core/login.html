@@ -1,12 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Login — SRAS</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="/static/css/main.css" />
 </head>
+
 <body class="login-layout">
   <div class="login-bg">
     <div class="login-orb login-orb-1"></div>
@@ -39,8 +43,8 @@
       </div>
       <div class="form-group">
         <label><i class="fas fa-lock"></i> Password</label>
-        <input type="password" name="password" class="form-control" placeholder="Enter password" required />
-        <small class="form-hint">Students: use your Roll ID as password</small>
+        <input type="password" name="password" class="form-control" placeholder="DDMMYYYY" required />
+        <small class="form-hint">Students: use your DOB as password</small>
       </div>
       <button type="submit" class="btn btn-primary btn-full">
         <i class="fas fa-right-to-bracket"></i> Sign In
@@ -48,8 +52,10 @@
     </form>
 
     <div class="login-info-box">
-      <div class="li-row"><span class="li-label"><i class="fas fa-chalkboard-teacher"></i> Teachers</span><span>Email + your password</span></div>
-      <div class="li-row"><span class="li-label"><i class="fas fa-user-graduate"></i> Students</span><span>Email + Roll ID</span></div>
+      <div class="li-row"><span class="li-label"><i class="fas fa-chalkboard-teacher"></i> Teachers</span><span>Email +
+          your password</span></div>
+      <div class="li-row"><span class="li-label"><i class="fas fa-user-graduate"></i> Students</span><span>Email + DOB
+        </span></div>
     </div>
 
     <div class="login-back">
@@ -57,4 +63,5 @@
     </div>
   </div>
 </body>
+
 </html>
