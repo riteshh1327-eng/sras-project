@@ -138,9 +138,9 @@ new Chart(document.getElementById('sgpaTrendChart'), {
     datasets: [{
       label: 'SGPA',
       data: SGPA_VALS,
-      borderColor: '#2563eb',
+      borderColor: 'var(--primary)',
       backgroundColor: 'rgba(37,99,235,0.1)',
-      pointBackgroundColor: '#2563eb',
+      pointBackgroundColor: 'var(--primary)',
       pointRadius: 6,
       tension: 0.35,
       fill: true,
@@ -200,7 +200,7 @@ if (document.getElementById('subjCompChart')) {
 // Grade Donut
 const gradeLabels = Object.keys(GRADE_DIST);
 const gradeVals   = Object.values(GRADE_DIST);
-const gradeColors = ['#059669','#16a34a','#22c55e','#3b82f6','#8b5cf6','#64748b','#ef4444'];
+const gradeColors = ['#059669','#16a34a','#22c55e','var(--primary)','#8b5cf6','#64748b','#ef4444'];
 new Chart(document.getElementById('gradeDonut'), {
   type: 'doughnut',
   data: {

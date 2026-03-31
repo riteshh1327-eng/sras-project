@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # SRAS — Student Result Analysis System
 
 A modern, production-ready Django web platform for teachers to manage students,
@@ -180,3 +181,6 @@ Install: `pip install psycopg2-binary`
 - [ ] Email notifications for notices
 - [ ] Multi-teacher role support
 - [ ] Mobile app API (Django REST Framework)
+=======
+# sras-project
+>>>>>>> f7cc81420797db66c7eafe01b1820a37e2a3ae27

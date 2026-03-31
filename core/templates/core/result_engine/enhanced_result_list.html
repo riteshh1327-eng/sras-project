@@ -54,7 +54,7 @@
     text-decoration: none; transition: 0.15s;
   }
   .filter-pill:hover { background: #e2e8f0; }
-  .filter-pill.active { background: var(--blue-600); color: white; border-color: var(--blue-600); }
+  .filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
   .active-filter-bar {
     display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
     padding: 10px 16px; background: #fef9c3; border: 1px solid #fde047;
@@ -170,7 +170,7 @@
 
 {% if analytics %}
 <div class="stats-grid">
-  <div class="stat-card stat-blue">
+  <div class="stat-card stat-orange">
     <div class="stat-card-icon"><i class="fas fa-users"></i></div>
     <div class="stat-card-body">
       <span class="stat-card-num">{{ analytics.total_students }}</span>

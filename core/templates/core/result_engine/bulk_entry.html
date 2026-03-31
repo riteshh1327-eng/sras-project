@@ -38,9 +38,9 @@
     color: var(--gray-700);
   }
   .max-badge {
-    background: var(--blue-50);
-    color: var(--blue-700);
-    border: 1px solid var(--blue-200);
+    background: var(--hover);
+    color: var(--text);
+    border: 1px solid var(--border);
     border-radius: 6px;
     padding: 8px 18px;
     font-weight: 700;
@@ -118,8 +118,8 @@
 
 <div class="info-bar">
   <div class="info-group">
-    <div class="info-tag"><i class="fas fa-users" style="color:var(--blue-500);margin-right:6px;"></i> {{ rows|length }} Students</div>
-    <div class="info-tag"><i class="fas fa-keyboard" style="color:var(--blue-500);margin-right:6px;"></i> Press Enter to jump to next row</div>
+    <div class="info-tag"><i class="fas fa-users" style="color:var(--primary);margin-right:6px;"></i> {{ rows|length }} Students</div>
+    <div class="info-tag"><i class="fas fa-keyboard" style="color:var(--primary);margin-right:6px;"></i> Press Enter to jump to next row</div>
   </div>
   <div class="max-badge">
     <i class="fas fa-bullseye"></i> Max Marks ({{ sel_comp|upper }}):

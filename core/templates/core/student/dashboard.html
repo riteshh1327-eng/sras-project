@@ -21,7 +21,7 @@
 
 <!-- Stat Cards -->
 <div class="stats-grid">
-  <div class="stat-card stat-blue">
+  <div class="stat-card stat-orange">
     <div class="stat-card-icon"><i class="fas fa-book-open"></i></div>
     <div class="stat-card-body">
       <span class="stat-card-num">{{ total_subjects }}</span>
@@ -35,7 +35,7 @@
       <span class="stat-card-label">CGPA (out of 10)</span>
     </div>
   </div>
-  <div class="stat-card stat-purple">
+  <div class="stat-card stat-orange">
     <div class="stat-card-icon"><i class="fas fa-percent"></i></div>
     <div class="stat-card-body">
       <span class="stat-card-num">{{ avg_pct }}%</span>
@@ -56,9 +56,9 @@
   {% if semester_data %}
     {% for data in semester_data %}
     <div class="section-card" style="margin-bottom: 24px;">
-      <div class="card-header" style="background:var(--blue-50); padding-bottom: 16px;">
+      <div class="card-header" style="background:var(--hover); padding-bottom: 16px;">
         <div>
-          <h2 class="card-title" style="margin-bottom:4px;"><i class="fas fa-graduation-cap" style="color:var(--blue-500)"></i> Semester {{ data.summary.semester }} ({{ data.summary.academic_year }})</h2>
+          <h2 class="card-title" style="margin-bottom:4px;"><i class="fas fa-graduation-cap" style="color:var(--primary)"></i> Semester {{ data.summary.semester }} ({{ data.summary.academic_year }})</h2>
           <span style="font-size: 13px; color: var(--gray-600);">Class: {{ data.summary.enrollment.student_class }} | Roll: {{ data.summary.enrollment.roll_id }}</span>
         </div>
         <div style="font-size: 14px; font-weight: bold;">

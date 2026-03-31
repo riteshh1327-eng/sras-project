@@ -53,7 +53,7 @@
 
 <!-- KPI Cards -->
 <div class="stats-grid">
-  <div class="stat-card stat-blue">
+  <div class="stat-card stat-orange">
     <div class="stat-card-icon"><i class="fas fa-users"></i></div>
     <div class="stat-card-body">
       <span class="stat-card-num">{{ analytics.total_students }}</span>
@@ -200,7 +200,7 @@ new Chart(document.getElementById('gradeChart'), {
     labels: Object.keys(GRADE_DIST),
     datasets: [{
       data: Object.values(GRADE_DIST),
-      backgroundColor: ['#059669','#16a34a','#22c55e','#3b82f6','#8b5cf6','#64748b','#ef4444'],
+      backgroundColor: ['#059669','#16a34a','#22c55e','var(--primary)','#8b5cf6','#64748b','#ef4444'],
       borderWidth: 2, borderColor: '#f8fafc',
     }]
   },

@@ -73,7 +73,7 @@ new Chart(document.getElementById('marksChart'), {
   data: {
     labels: subjects,
     datasets: [
-      { label: 'IA-1', data: ia1Vals, backgroundColor: '#3b82f6' },
+      { label: 'IA-1', data: ia1Vals, backgroundColor: 'var(--primary)' },
       { label: 'IA-2', data: ia2Vals, backgroundColor: '#10b981' },
       { label: 'SEM',  data: semVals, backgroundColor: '#8b5cf6' },
     ]
@@ -87,7 +87,7 @@ new Chart(document.getElementById('gradeChart'), {
     labels: Object.keys(gradeDist),
     datasets: [{
       data: Object.values(gradeDist),
-      backgroundColor: ['#10b981','#3b82f6','#60a5fa','#f59e0b','#f97316','#6b7280','#ef4444'],
+      backgroundColor: ['#10b981','var(--primary)','var(--accent)','#f59e0b','#f97316','#6b7280','#ef4444'],
     }]
   },
   options: { responsive: true }

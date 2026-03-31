@@ -36,7 +36,7 @@
 {% if summary %}
 <!-- Summary Row -->
 <div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
-  <div class="stat-card stat-blue">
+  <div class="stat-card stat-orange">
     <div class="stat-card-icon"><i class="fas fa-book"></i></div>
     <div class="stat-card-body">
       <span class="stat-card-num">{{ results|length }}</span>
@@ -50,7 +50,7 @@
       <span class="stat-card-label">SGPA</span>
     </div>
   </div>
-  <div class="stat-card stat-purple">
+  <div class="stat-card stat-orange">
     <div class="stat-card-icon"><i class="fas fa-percent"></i></div>
     <div class="stat-card-body">
       <span class="stat-card-num">{{ summary.percentage|floatformat:1 }}%</span>

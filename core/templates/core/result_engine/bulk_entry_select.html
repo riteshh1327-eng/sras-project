@@ -14,7 +14,7 @@
 
 <div class="form-card" style="max-width:860px;">
   <h3 style="font-size:15px; font-weight:700; margin-bottom:20px; color:var(--gray-700);">
-    <i class="fas fa-filter" style="color:var(--blue-500);"></i> Step 1 — Select Target
+    <i class="fas fa-filter" style="color:var(--primary);"></i> Step 1 — Select Target
   </h3>
 
   <form method="get" action="{% url 're_bulk_entry' %}">
@@ -53,7 +53,7 @@
   {% if semester_subjects %}
   <div style="border-top:1px solid var(--gray-200); margin-top:24px; padding-top:20px;">
     <h3 style="font-size:15px; font-weight:700; margin-bottom:16px; color:var(--gray-700);">
-      <i class="fas fa-book" style="color:var(--blue-500);"></i> Step 2 — Select Subject & Component
+      <i class="fas fa-book" style="color:var(--primary);"></i> Step 2 — Select Subject & Component
     </h3>
 
     <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px;">
@@ -66,8 +66,8 @@
         </div>
         <div class="ssc-components">
           {% if ss.has_ia %}
-          <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&ss_id={{ ss.pk }}&component=ia1" class="comp-btn comp-blue">IA-1 /{{ ss.max_ia1 }}</a>
-          <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&ss_id={{ ss.pk }}&component=ia2" class="comp-btn comp-purple">IA-2 /{{ ss.max_ia2 }}</a>
+          <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&ss_id={{ ss.pk }}&component=ia1" class="comp-btn comp-orange">IA-1 /{{ ss.max_ia1 }}</a>
+          <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&ss_id={{ ss.pk }}&component=ia2" class="comp-btn comp-orange">IA-2 /{{ ss.max_ia2 }}</a>
           {% endif %}
           {% if ss.has_sem %}
           <a href="{% url 're_bulk_entry' %}?year={{ sel_year }}&class_id={{ sel_cls }}&sem={{ sel_sem }}&ss_id={{ ss.pk }}&component=sem" class="comp-btn comp-green">SEM /{{ ss.max_sem }}</a>

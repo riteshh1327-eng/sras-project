@@ -35,7 +35,7 @@
     transition: all 0.2s;
   }
   .comp-card:hover {
-    border-color: var(--blue-400);
+    border-color: var(--accent);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.08);
   }
   .comp-header {
@@ -50,7 +50,7 @@
     width: 20px;
     height: 20px;
     cursor: pointer;
-    accent-color: var(--blue-600);
+    accent-color: var(--primary);
   }
   .comp-header label {
     font-weight: 700;
@@ -90,9 +90,9 @@
   }
   .marks-group input:focus {
     outline: none;
-    color: var(--blue-600);
+    color: var(--primary);
   }
-  .marks-group.max-bg { border-left: 3px solid var(--blue-500); }
+  .marks-group.max-bg { border-left: 3px solid var(--primary); }
   .marks-group.min-bg { border-left: 3px solid var(--orange-500); }
 </style>
 
@@ -114,7 +114,7 @@
     {% csrf_token %}
 
     <h3 style="font-size:16px; font-weight:700; color:var(--gray-800); margin-bottom:20px; display:flex; align-items:center; gap:8px;">
-      <i class="fas fa-book-open text-blue-500"></i> Subject Details
+      <i class="fas fa-book-open text-orange-500"></i> Subject Details
     </h3>
 
     <div class="form-grid-top">
@@ -159,9 +159,9 @@
     
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
       <h3 style="font-size:16px; font-weight:700; color:var(--gray-800); display:flex; align-items:center; gap:8px; margin:0;">
-        <i class="fas fa-sliders text-blue-500"></i> Components & Rules
+        <i class="fas fa-sliders text-orange-500"></i> Components & Rules
       </h3>
-      <span class="badge" style="background:var(--blue-50); color:var(--blue-700);">Pass Rule: ALL enabled components ≥ Min Marks</span>
+      <span class="badge" style="background:var(--hover); color:var(--text);">Pass Rule: ALL enabled components ≥ Min Marks</span>
     </div>
 
     <div class="component-grid">
