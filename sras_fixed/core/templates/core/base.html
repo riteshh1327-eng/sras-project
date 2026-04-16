@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}SRAS{% endblock %} — Student Result Analysis System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body class="app-layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
+        <div class="logo-text">
+          <span class="logo-title">SRAS</span>
+          <span class="logo-sub">Result System</span>
+        </div>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle"><i class="fas fa-bars"></i></button>
+    </div>
+
+    <nav class="sidebar-nav">
+
+      <div class="nav-section">
+        <a href="{% url 'dashboard' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+          <i class="fas fa-chart-pie"></i><span>Dashboard</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Classes</div>
+        <a href="{% url 'class_create' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'class_create' %}active{% endif %}">
+          <i class="fas fa-plus-circle"></i><span>Create Class</span>
+        </a>
+        <a href="{% url 'class_list' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'class_list' %}active{% endif %}">
+          <i class="fas fa-list-ul"></i><span>Manage Classes</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Subjects</div>
+        <a href="{% url 'subject_create' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'subject_create' %}active{% endif %}">
+          <i class="fas fa-book-medical"></i><span>Create Subject</span>
+        </a>
+        <a href="{% url 'subject_list' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'subject_list' %}active{% endif %}">
+          <i class="fas fa-books"></i><span>Manage Subjects</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Combinations</div>
+        <a href="{% url 'combination_create' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'combination_create' %}active{% endif %}">
+          <i class="fas fa-link"></i><span>Add Combination</span>
+        </a>
+        <a href="{% url 'combination_list' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'combination_list' %}active{% endif %}">
+          <i class="fas fa-project-diagram"></i><span>Manage Combinations</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Students</div>
+        <a href="{% url 'student_create' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'student_create' %}active{% endif %}">
+          <i class="fas fa-user-plus"></i><span>Add Student</span>
+        </a>
+        <a href="{% url 'student_upload' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'student_upload' %}active{% endif %}">
+          <i class="fas fa-file-excel"></i><span>Upload Excel</span>
+        </a>
+        <a href="{% url 'student_list' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'student_list' %}active{% endif %}">
+          <i class="fas fa-users"></i><span>Manage Students</span>
+        </a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-label">Result Engine</div>
+        <a href="{% url 're_enrollment_list' %}"
+          class="nav-item {% if 're_enrollment' in request.resolver_match.url_name|default:'' %}active{% endif %}">
+          <i class="fas fa-id-card"></i><span>Enrollments</span>
+        </a>
+        <a href="{% url 're_semester_subject_list' %}"
+          class="nav-item {% if 're_semester_subject' in request.resolver_match.url_name|default:'' %}active{% endif %}">
+          <i class="fas fa-book-bookmark"></i><span>Semester Subjects</span>
+        </a>
+        <a href="{% url 're_bulk_entry' %}"
+          class="nav-item {% if request.resolver_match.url_name == 're_bulk_entry' %}active{% endif %}">
+          <i class="fas fa-keyboard"></i><span>Bulk Mark Entry</span>
+        </a>
+        <a href="{% url 're_result_list' %}"
+          class="nav-item {% if request.resolver_match.url_name == 're_result_list' %}active{% endif %}">
+          <i class="fas fa-ranking-star"></i><span>Class Results</span>
+        </a>
+        <a href="{% url 're_teacher_analytics' %}"
+          class="nav-item {% if request.resolver_match.url_name == 're_teacher_analytics' %}active{% endif %}">
+          <i class="fas fa-chart-mixed"></i><span>Teacher Analytics</span>
+        </a>
+      </div>
+
+
+
+      <div class="nav-section">
+        <div class="nav-label">Notices</div>
+        <a href="{% url 'notice_create' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'notice_create' %}active{% endif %}">
+          <i class="fas fa-bullhorn"></i><span>Add Notice</span>
+        </a>
+        <a href="{% url 'notice_list' %}"
+          class="nav-item {% if request.resolver_match.url_name == 'notice_list' %}active{% endif %}">
+          <i class="fas fa-newspaper"></i><span>Manage Notices</span>
+        </a>
+      </div>
+
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="{% url 'home' %}" class="nav-item">
+        <i class="fas fa-globe"></i><span>Public Site</span>
+      </a>
+      <a href="{% url 'logout' %}" class="nav-item nav-logout">
+        <i class="fas fa-right-from-bracket"></i><span>Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content" id="mainContent">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-menu-btn" id="topbarMenuBtn">
+          <i class="fas fa-bars"></i>
+        </button>
+        <nav class="breadcrumb-nav">
+          {% block breadcrumb %}
+          <span class="breadcrumb-item"><i class="fas fa-house"></i> Dashboard</span>
+          {% endblock %}
+        </nav>
+      </div>
+      <div class="topbar-right">
+        <span class="topbar-user">
+          <i class="fas fa-circle-user"></i>
+          {{ request.session.user_name|default:"Teacher" }}
+          <span class="role-chip">Teacher</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="messages-container">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible">
+        <i
+          class="fas fa-{% if 'success' in message.tags %}circle-check{% elif 'error' in message.tags %}circle-xmark{% elif 'warning' in message.tags %}triangle-exclamation{% else %}circle-info{% endif %}"></i>
+        {{ message }}
+        <button class="alert-close" onclick="this.parentElement.remove()"><i class="fas fa-xmark"></i></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Page Content -->
+    <div class="page-content">
+      {% block content %}{% endblock %}
+    </div>
+
+  </main>
+
+  <script src="/static/js/main.js"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+
+</html>

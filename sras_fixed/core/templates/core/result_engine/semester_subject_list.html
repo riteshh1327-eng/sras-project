@@ -1,0 +1,154 @@
+{% extends 'core/base.html' %}
+{% block title %}Semester Subjects{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-book-bookmark"></i> Semester Subjects</span>
+{% endblock %}
+
+{% block content %}
+<style>
+  .modern-pill {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-width: 60px;
+    line-height: 1.2;
+  }
+  .modern-pill .mp-max {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--gray-800);
+  }
+  .modern-pill .mp-min {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--orange-600);
+    text-transform: uppercase;
+  }
+  .modern-pill.mp-inactive {
+    background: transparent;
+    border-color: transparent;
+    color: var(--gray-400);
+    opacity: 0.5;
+  }
+</style>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Semester Subjects</h1>
+    <p class="page-subtitle">Assign subjects, credits, and component passing rules (Min / Max)</p>
+  </div>
+  <a href="{% url 're_semester_subject_create' %}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Add Semester Subject
+  </a>
+</div>
+
+{% if grouped %}
+  {% for group_key, items in grouped.items %}
+  <div class="section-card" style="margin-bottom:24px; box-shadow:0 2px 12px rgba(0,0,0,0.04);">
+    <div class="card-header" style="background:var(--gray-50); border-radius:12px 12px 0 0; border-bottom:1px solid #e2e8f0;">
+      <h2 class="card-title" style="font-size:15px;">
+        <i class="fas fa-layer-group" style="color:var(--primary)"></i>
+        {{ group_key }}
+      </h2>
+      <span class="badge" style="background:white; border:1px solid #e2e8f0; color:var(--gray-600);">{{ items|length }} subject{{ items|length|pluralize }}</span>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="data-table" style="margin:0;">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th style="text-align:center;">Credits</th>
+            <th style="text-align:center;">IA</th>
+            <th style="text-align:center;">SEM</th>
+            <th style="text-align:center;">TW</th>
+            <th style="text-align:center;">Oral</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ss in items %}
+          <tr>
+            <td>
+              <strong style="color:var(--gray-900);">{{ ss.subject.display_name }}</strong>
+              {% if ss.subject.code %}<div style="font-size:12px; color:var(--gray-500); margin-top:2px; font-family:monospace;">{{ ss.subject.code }}</div>{% endif %}
+            </td>
+            <td style="text-align:center;"><span class="badge" style="background:#f1f5f9; color:#475569;">{{ ss.credits }} cr</span></td>
+            
+            <td style="text-align:center;">
+              {% if ss.has_ia %}
+              <div style="display:flex; gap:4px; justify-content:center;">
+                <div class="modern-pill">
+                  <span class="mp-max">{{ ss.max_ia1 }}</span>
+                  <span class="mp-min">Min {{ ss.min_ia1 }}</span>
+                </div>
+                <div class="modern-pill">
+                  <span class="mp-max">{{ ss.max_ia2 }}</span>
+                  <span class="mp-min">Min {{ ss.min_ia2 }}</span>
+                </div>
+              </div>
+              {% else %}
+                <span class="modern-pill mp-inactive">—</span>
+              {% endif %}
+            </td>
+
+            <td style="text-align:center;">
+              {% if ss.has_sem %}
+              <div class="modern-pill">
+                <span class="mp-max">{{ ss.max_sem }}</span>
+                <span class="mp-min">Min {{ ss.min_sem }}</span>
+              </div>
+              {% else %}<span class="modern-pill mp-inactive">—</span>{% endif %}
+            </td>
+
+            <td style="text-align:center;">
+              {% if ss.has_tw %}
+              <div class="modern-pill">
+                <span class="mp-max">{{ ss.max_tw }}</span>
+                <span class="mp-min">Min {{ ss.min_tw }}</span>
+              </div>
+              {% else %}<span class="modern-pill mp-inactive">—</span>{% endif %}
+            </td>
+
+            <td style="text-align:center;">
+              {% if ss.has_oral %}
+              <div class="modern-pill">
+                <span class="mp-max">{{ ss.max_oral }}</span>
+                <span class="mp-min">Min {{ ss.min_oral }}</span>
+              </div>
+              {% else %}<span class="modern-pill mp-inactive">—</span>{% endif %}
+            </td>
+
+            <td class="td-actions" style="text-align:right;">
+              <a href="{% url 're_semester_subject_edit' ss.pk %}" class="btn btn-outline" style="padding:6px 12px; font-size:13px;">
+                <i class="fas fa-cog"></i> Config
+              </a>
+              <form method="post" action="{% url 're_semester_subject_delete' ss.pk %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit" class="btn-icon btn-delete" onclick="return confirm('Delete this semester subject?')" style="padding:6px;">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+<div class="section-card">
+  <div class="empty-state">
+    <i class="fas fa-book-bookmark"></i>
+    <h3>No Semester Subjects Yet</h3>
+    <p>Add subjects with credits to enable the result engine.</p>
+    <a href="{% url 're_semester_subject_create' %}" class="btn btn-primary">Add First Semester Subject</a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

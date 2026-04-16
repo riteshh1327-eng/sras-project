@@ -1,0 +1,54 @@
+{% extends 'core/base.html' %}
+{% block title %}Manage Notices{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-newspaper"></i> Notices</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Notices</h1>
+    <p class="page-subtitle">{{ notices|length }} notice{{ notices|length|pluralize }} in the system</p>
+  </div>
+  <a href="{% url 'notice_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Notice</a>
+</div>
+
+<div class="section-card">
+  {% if notices %}
+  <table class="data-table">
+    <thead>
+      <tr><th>#</th><th>Title</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+    </thead>
+    <tbody>
+      {% for notice in notices %}
+      <tr>
+        <td class="td-num">{{ forloop.counter }}</td>
+        <td>
+          <strong>{{ notice.title }}</strong>
+          <p class="notice-preview">{{ notice.short_content }}</p>
+        </td>
+        <td>
+          {% if notice.is_active %}
+          <span class="status-badge status-pass"><i class="fas fa-circle"></i> Active</span>
+          {% else %}
+          <span class="status-badge status-inactive"><i class="fas fa-circle"></i> Inactive</span>
+          {% endif %}
+        </td>
+        <td class="text-muted">{{ notice.created_at|date:"d M Y, h:i A" }}</td>
+        <td class="td-actions">
+          <a href="{% url 'notice_edit' notice.pk %}" class="btn-icon btn-edit"><i class="fas fa-pen"></i></a>
+          <a href="{% url 'notice_delete' notice.pk %}" class="btn-icon btn-delete"><i class="fas fa-trash"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-newspaper"></i>
+    <h3>No Notices Yet</h3>
+    <p>Post your first announcement to students.</p>
+    <a href="{% url 'notice_create' %}" class="btn btn-primary">Add Notice</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+{% block title %}Add Results{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-pen-to-square"></i> Add Results</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Add Results</h1>
+    <p class="page-subtitle">Step 1: Select class and subject</p>
+  </div>
+</div>
+
+<div class="section-row">
+  <!-- Step 1: Select Class -->
+  <div class="section-card flex-1">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-layer-group"></i> Select Class</h2></div>
+    <div class="class-select-grid">
+      {% for cls in classes %}
+      <a href="?class_id={{ cls.pk }}" class="class-select-card {% if selected_class and selected_class.pk == cls.pk %}selected{% endif %}">
+        <div class="csc-name">{{ cls.display_name }}</div>
+        <div class="csc-year">{{ cls.academic_year }}</div>
+        <div class="csc-count">{{ cls.student_count }} students</div>
+      </a>
+      {% empty %}
+      <p class="empty-state-sm">No classes with students found. <a href="{% url 'student_create' %}">Add students first.</a></p>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Step 2: Select Subject -->
+  {% if selected_class %}
+  <div class="section-card flex-1">
+    <div class="card-header">
+      <h2 class="card-title"><i class="fas fa-book-open"></i> Select Subject</h2>
+      <small>for {{ selected_class }}</small>
+    </div>
+    {% if subjects %}
+    <div class="subject-select-list">
+      {% for subj in subjects %}
+      <a href="?class_id={{ selected_class.pk }}&subject_id={{ subj.pk }}" class="subject-select-item">
+        <div class="ssi-name">{{ subj.display_name }}</div>
+        {% if subj.code %}<div class="ssi-code">{{ subj.code }}</div>{% endif %}
+        <i class="fas fa-arrow-right ssi-arrow"></i>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state-sm">
+      <i class="fas fa-book-open"></i>
+      No subjects assigned to this class.
+      <a href="{% url 'combination_create' %}">Add subject combinations</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

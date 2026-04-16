@@ -1,0 +1,23 @@
+{% extends 'core/base.html' %}
+{% block title %}Delete {{ object_type }}{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Delete {{ object_type }}</h1>
+  </div>
+</div>
+<div class="form-card delete-confirm-card">
+  <div class="delete-icon"><i class="fas fa-triangle-exclamation"></i></div>
+  <h2>Are you sure?</h2>
+  <p>You are about to permanently delete:</p>
+  <div class="delete-object-name">{{ object }}</div>
+  <p class="delete-warning">This action <strong>cannot be undone</strong>. All related data may also be deleted.</p>
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-actions delete-actions">
+      <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Yes, Delete</button>
+      <a href="{% url cancel_url %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

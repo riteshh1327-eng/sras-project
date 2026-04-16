@@ -1,0 +1,106 @@
+{% extends 'core/base.html' %}
+{% block title %}Results{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-table-list"></i> Results</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Results</h1>
+    <p class="page-subtitle">{{ total_count }} result{{ total_count|pluralize }} found</p>
+  </div>
+  <a href="{% url 'result_add' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Results</a>
+</div>
+
+<!-- Filter Panel -->
+<div class="section-card filter-panel">
+  <div class="card-header"><h3 class="card-title"><i class="fas fa-filter"></i> Filter Results</h3></div>
+  <form method="get" class="filter-grid">
+    <div class="form-group">
+      <label class="form-label">Class</label>
+      {{ filter_form.student_class }}
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subject</label>
+      {{ filter_form.subject }}
+    </div>
+    <div class="form-group">
+      <label class="form-label">Student Name</label>
+      {{ filter_form.student_name }}
+    </div>
+    <div class="form-group">
+      <label class="form-label">Roll ID</label>
+      {{ filter_form.roll_id }}
+    </div>
+    <div class="form-group">
+      <label class="form-label">Sort By</label>
+      {{ filter_form.sort_by }}
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fail Filter</label>
+      {{ filter_form.fail_filter }}
+    </div>
+    <div class="filter-actions col-span-full">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Apply Filter</button>
+      <a href="{% url 'result_list' %}" class="btn btn-outline">Clear All</a>
+    </div>
+  </form>
+</div>
+
+<!-- Results Table -->
+<div class="section-card">
+  {% if result_list_data %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Student</th>
+        <th>Roll ID</th>
+        <th>Class</th>
+        <th>Subject</th>
+        <th>IA-1 /20</th>
+        <th>IA-2 /20</th>
+        <th>SEM /60</th>
+        <th>Total /100</th>
+        <th>%</th>
+        <th>Grade</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in result_list_data %}
+      {% with r=item.obj %}
+      <tr>
+        <td class="td-num">{{ forloop.counter }}</td>
+        <td><a href="{% url 'student_detail' r.student.pk %}">{{ r.student.name }}</a></td>
+        <td><span class="badge-roll">{{ r.student.roll_id }}</span></td>
+        <td><span class="badge-class-sm">{{ r.student.student_class.display_name }}</span></td>
+        <td>{{ r.subject.display_name }}</td>
+        <td class="{% if r.is_fail_ia1 %}td-fail{% endif %}">{{ r.ia1_marks }}</td>
+        <td class="{% if r.is_fail_ia2 %}td-fail{% endif %}">{{ r.ia2_marks }}</td>
+        <td class="{% if r.is_fail_sem %}td-fail{% endif %}">{{ r.sem_marks }}</td>
+        <td><strong>{{ item.total }}</strong></td>
+        <td>{{ r.percentage }}%</td>
+        <td><span class="grade-badge grade-{{ r.grade }}">{{ r.grade }}</span></td>
+        <td>
+          {% if r.is_overall_fail %}
+          <span class="status-badge status-fail"><i class="fas fa-xmark"></i> Fail</span>
+          {% else %}
+          <span class="status-badge status-pass"><i class="fas fa-check"></i> Pass</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endwith %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-clipboard-list"></i>
+    <h3>No Results Found</h3>
+    <p>{% if request.GET %}No results match your filters.{% else %}Add results to get started.{% endif %}</p>
+    <a href="{% url 'result_add' %}" class="btn btn-primary">Add Results</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

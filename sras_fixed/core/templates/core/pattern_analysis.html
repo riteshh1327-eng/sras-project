@@ -1,0 +1,201 @@
+{% extends 'core/base.html' %}
+{% block title %}Pattern Analysis{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-chart-column"></i> Pattern Analysis</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Pattern Analysis</h1>
+    <p class="page-subtitle">Identify failure trends and at-risk students</p>
+  </div>
+  <a href="{% url 'export_failure_csv' %}" class="btn btn-success"><i class="fas fa-file-csv"></i> Export Failure Report</a>
+</div>
+
+<!-- Analytics Cards -->
+<div class="stats-grid">
+  <div class="stat-card stat-red">
+    <div class="stat-card-icon"><i class="fas fa-circle-xmark"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ fail_pct }}%</span>
+      <span class="stat-card-label">Overall Fail Rate</span>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-card-icon"><i class="fas fa-triangle-exclamation"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ total_fail }}</span>
+      <span class="stat-card-label">Total Failures</span>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-card-icon"><i class="fas fa-clipboard-list"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ total_results }}</span>
+      <span class="stat-card-label">Total Results</span>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-card-icon"><i class="fas fa-circle-check"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ total_results|add:"-"|add:total_fail }}</span>
+      <span class="stat-card-label">Total Passes</span>
+    </div>
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="section-row">
+  <div class="section-card flex-1">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-pie"></i> Grade Distribution</h2></div>
+    <div class="chart-wrap"><canvas id="gradeChart"></canvas></div>
+  </div>
+  <div class="section-card flex-2">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-bar"></i> Subject-wise Fail Rate</h2></div>
+    <div class="chart-wrap"><canvas id="subjFailChart"></canvas></div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="section-card filter-panel">
+  <div class="card-header"><h3 class="card-title"><i class="fas fa-filter"></i> Filter Failing Students</h3></div>
+  <form method="get" class="filter-grid">
+    <div class="form-group">
+      <label class="form-label">Class</label>
+      <select name="class_id" class="form-control">
+        <option value="">All Classes</option>
+        {% for cls in classes %}
+        <option value="{{ cls.pk }}" {% if sel_class == cls.pk|stringformat:"s" %}selected{% endif %}>{{ cls }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Subject</label>
+      <select name="subject_id" class="form-control">
+        <option value="">All Subjects</option>
+        {% for subj in subjects %}
+        <option value="{{ subj.pk }}" {% if sel_subject == subj.pk|stringformat:"s" %}selected{% endif %}>{{ subj.display_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Exam Type</label>
+      <select name="exam_type" class="form-control">
+        <option value="">All Exams</option>
+        <option value="ia1" {% if sel_exam == 'ia1' %}selected{% endif %}>IA-1 Failures</option>
+        <option value="ia2" {% if sel_exam == 'ia2' %}selected{% endif %}>IA-2 Failures</option>
+        <option value="sem" {% if sel_exam == 'sem' %}selected{% endif %}>End-Sem Failures</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Fail Count</label>
+      <select name="fail_count" class="form-control">
+        <option value="">Any</option>
+        <option value="1" {% if sel_fail_count == '1' %}selected{% endif %}>Exactly 1 subject</option>
+        <option value="2" {% if sel_fail_count == '2' %}selected{% endif %}>Exactly 2 subjects</option>
+        <option value="3" {% if sel_fail_count == '3' %}selected{% endif %}>3 or more subjects</option>
+      </select>
+    </div>
+    <div class="filter-actions col-span-full">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i> Apply</button>
+      <a href="{% url 'pattern_analysis' %}" class="btn btn-outline">Clear</a>
+    </div>
+  </form>
+</div>
+
+<!-- Results Table -->
+<div class="section-card">
+  <div class="card-header">
+    <h2 class="card-title"><i class="fas fa-users-slash"></i> Failing Students</h2>
+    <span class="card-link">{{ results|length }} record{{ results|length|pluralize }}</span>
+  </div>
+  {% if results %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Student</th>
+        <th>Roll ID</th>
+        <th>Class</th>
+        <th>Subject</th>
+        <th>IA-1</th>
+        <th>IA-2</th>
+        <th>SEM</th>
+        <th>Total</th>
+        <th>Grade</th>
+        <th>All Failed Subjects</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in results %}
+      {% with r=item.r %}
+      <tr>
+        <td class="td-num">{{ forloop.counter }}</td>
+        <td><a href="{% url 'student_detail' r.student.pk %}">{{ r.student.name }}</a></td>
+        <td><span class="badge-roll">{{ r.enrollment.roll_id|default:"—" }}</span></td>
+        <td><span class="badge-class-sm">{{ r.enrollment.student_class.display_name|default:"—" }}</span></td>
+        <td>{{ r.subject.display_name }}</td>
+        <td class="{% if r.is_fail_ia1 %}td-fail{% endif %}">{{ r.ia1_marks }}</td>
+        <td class="{% if r.is_fail_ia2 %}td-fail{% endif %}">{{ r.ia2_marks }}</td>
+        <td class="{% if r.is_fail_sem %}td-fail{% endif %}">{{ r.sem_marks }}</td>
+        <td><strong>{{ r.total }}</strong></td>
+        <td><span class="grade-badge grade-F">F</span></td>
+        <td><span class="failed-subj-list">{{ item.failed_subjects }}</span></td>
+      </tr>
+      {% endwith %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-circle-check"></i>
+    <h3>No Failures Found</h3>
+    <p>{% if sel_class or sel_subject or sel_exam %}No students match the current filters.{% else %}No failing results in the system.{% endif %}</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+Chart.defaults.color = '#64748b';
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+
+// Grade Distribution
+const gd = {{ grade_dist_json|safe }};
+new Chart(document.getElementById('gradeChart'), {
+  type: 'doughnut',
+  data: {
+    labels: Object.keys(gd),
+    datasets: [{
+      data: Object.values(gd),
+      backgroundColor: ['#059669','#16a34a','#22c55e','var(--primary)','#8b5cf6','#ef4444'],
+      borderWidth: 2, borderColor: '#f8fafc',
+    }]
+  },
+  options: { responsive: true, plugins: { legend: { position: 'right' } }, cutout: '60%' }
+});
+
+// Subject fail rate bar chart
+const sfd = {{ subj_fail_json|safe }};
+new Chart(document.getElementById('subjFailChart'), {
+  type: 'bar',
+  data: {
+    labels: sfd.map(d => d.name),
+    datasets: [{
+      label: 'Fail %',
+      data: sfd.map(d => d.fail_pct),
+      backgroundColor: sfd.map(d => d.fail_pct > 50 ? 'rgba(239,68,68,0.8)' : d.fail_pct > 25 ? 'rgba(249,115,22,0.8)' : 'rgba(59,130,246,0.8)'),
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { min: 0, max: 100, ticks: { callback: v => v + '%' }, grid: { color: 'rgba(100,116,139,0.1)' } } }
+  }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ action }} Combination{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 'combination_list' %}"><i class="fas fa-project-diagram"></i> Combinations</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">{{ action }}</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ action }} Subject Combination</h1>
+    <p class="page-subtitle">Assign a subject to a class</p>
+  </div>
+  <a href="{% url 'combination_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="form-card">
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group">
+      <label class="form-label">{{ field.label }}</label>
+      {{ field }}
+      {% for error in field.errors %}<span class="form-error"><i class="fas fa-circle-exclamation"></i> {{ error }}</span>{% endfor %}
+    </div>
+    {% endfor %}
+    {% if form.non_field_errors %}
+    <div class="alert alert-error">{{ form.non_field_errors }}</div>
+    {% endif %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Combination</button>
+      <a href="{% url 'combination_list' %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

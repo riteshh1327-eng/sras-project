@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ action }} Subject{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 'subject_list' %}"><i class="fas fa-book-open"></i> Subjects</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">{{ action }} Subject</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ action }} Subject</h1>
+    <p class="page-subtitle">{% if action == 'Edit' %}Update subject details{% else %}Add a new subject to the system{% endif %}</p>
+  </div>
+  <a href="{% url 'subject_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="form-card">
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group">
+      <label class="form-label">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<small class="form-hint">{{ field.help_text }}</small>{% endif %}
+      {% for error in field.errors %}<span class="form-error"><i class="fas fa-circle-exclamation"></i> {{ error }}</span>{% endfor %}
+    </div>
+    {% endfor %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ action }} Subject</button>
+      <a href="{% url 'subject_list' %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

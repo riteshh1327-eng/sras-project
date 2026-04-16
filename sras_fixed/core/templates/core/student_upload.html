@@ -1,0 +1,75 @@
+{% extends 'core/base.html' %}
+{% block title %}Upload Students via Excel{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 'student_list' %}"><i class="fas fa-users"></i> Students</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">Upload Excel</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Upload Students via Excel</h1>
+    <p class="page-subtitle">Bulk import students from an Excel spreadsheet</p>
+  </div>
+  <a href="{% url 'student_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="section-row">
+  <div class="form-card flex-2">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<small class="form-hint">{{ field.help_text }}</small>{% endif %}
+        {% for error in field.errors %}<span class="form-error"><i class="fas fa-circle-exclamation"></i> {{ error }}</span>{% endfor %}
+      </div>
+      {% endfor %}
+      <div class="form-actions">
+        <button type="submit" class="btn btn-success"><i class="fas fa-upload"></i> Import Students</button>
+        <a href="{% url 'student_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Instructions Panel -->
+  <div class="section-card flex-1 upload-guide">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-circle-info"></i> Instructions</h2></div>
+    <div class="guide-content">
+      <div class="guide-step">
+        <div class="guide-num">1</div>
+        <div>Download the sample Excel template below.</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">2</div>
+        <div>Fill in student details in the correct columns.</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">3</div>
+        <div>Select the target class from the dropdown.</div>
+      </div>
+      <div class="guide-step">
+        <div class="guide-num">4</div>
+        <div>Upload the file and click "Import Students".</div>
+      </div>
+
+      <div class="excel-format">
+        <h4><i class="fas fa-table"></i> Required Columns</h4>
+        <table class="mini-table">
+          <tr><th>Column</th><th>Example</th></tr>
+          <tr><td>Name</td><td>Rahul Patil</td></tr>
+          <tr><td>RollID</td><td>SE001</td></tr>
+          <tr><td>Email</td><td>rahul@gmail.com</td></tr>
+          <tr><td>Gender</td><td>Male / Female / Other</td></tr>
+          <tr><td>DOB</td><td>2004-05-21</td></tr>
+        </table>
+      </div>
+
+      <a href="{% url 'download_sample_excel' %}" class="btn btn-success btn-full mt-3">
+        <i class="fas fa-download"></i> Download Sample Template
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ action }} Class{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 'class_list' %}"><i class="fas fa-layer-group"></i> Classes</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">{{ action }} Class</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ action }} Class</h1>
+    <p class="page-subtitle">{% if action == 'Edit' %}Update class details{% else %}Add a new class to the system{% endif %}</p>
+  </div>
+  <a href="{% url 'class_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+<div class="form-card">
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <div class="form-group">
+      <label class="form-label">{{ field.label }}</label>
+      {{ field }}
+      {% if field.help_text %}<small class="form-hint">{{ field.help_text }}</small>{% endif %}
+      {% for error in field.errors %}<span class="form-error"><i class="fas fa-circle-exclamation"></i> {{ error }}</span>{% endfor %}
+    </div>
+    {% endfor %}
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ action }} Class</button>
+      <a href="{% url 'class_list' %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

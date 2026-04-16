@@ -1,0 +1,55 @@
+{% extends 'core/base.html' %}
+{% block title %}Manage Classes{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><i class="fas fa-layer-group"></i> Classes</span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">Manage Classes</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Classes</h1>
+    <p class="page-subtitle">{{ classes|length }} class{{ classes|length|pluralize:"es" }} in the system</p>
+  </div>
+  <a href="{% url 'class_create' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Create Class</a>
+</div>
+
+<div class="section-card">
+  {% if classes %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Class</th>
+        <th>Section</th>
+        <th>Academic Year</th>
+        <th>Students</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cls in classes %}
+      <tr>
+        <td class="td-num">{{ forloop.counter }}</td>
+        <td><span class="badge-class">{{ cls.get_class_year_display }}</span></td>
+        <td><span class="badge-section">{{ cls.section }}</span></td>
+        <td>{{ cls.academic_year }}</td>
+        <td><span class="badge-count">{{ cls.student_count }} students</span></td>
+        <td class="td-actions">
+          <a href="{% url 'class_edit' cls.pk %}" class="btn-icon btn-edit" title="Edit"><i class="fas fa-pen"></i></a>
+          <a href="{% url 'class_delete' cls.pk %}" class="btn-icon btn-delete" title="Delete"><i class="fas fa-trash"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <i class="fas fa-layer-group"></i>
+    <h3>No Classes Yet</h3>
+    <p>Create your first class to get started.</p>
+    <a href="{% url 'class_create' %}" class="btn btn-primary">Create Class</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

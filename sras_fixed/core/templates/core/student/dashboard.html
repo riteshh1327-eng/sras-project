@@ -1,0 +1,128 @@
+{% extends 'core/student/base_student.html' %}
+{% block title %}My Dashboard{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-chart-pie"></i> Dashboard</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Welcome, {{ student.name }}!</h1>
+    <p class="page-subtitle">
+      {% if enrollment %}
+        <span class="badge-class-sm">{{ enrollment.student_class }}</span>
+        &nbsp;Roll ID: <span class="badge-roll">{{ enrollment.roll_id }}</span>
+      {% else %}
+        <span class="text-muted">No enrollment found — contact your teacher.</span>
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+<!-- Stat Cards -->
+<div class="stats-grid">
+  <div class="stat-card stat-orange">
+    <div class="stat-card-icon"><i class="fas fa-book-open"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ total_subjects }}</span>
+      <span class="stat-card-label">Total Subjects</span>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-card-icon"><i class="fas fa-star"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ cgpa }}</span>
+      <span class="stat-card-label">CGPA (out of 10)</span>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-card-icon"><i class="fas fa-percent"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ avg_pct }}%</span>
+      <span class="stat-card-label">Overall Percentage</span>
+    </div>
+  </div>
+  <div class="stat-card {% if failed > 0 %}stat-red{% else %}stat-teal{% endif %}">
+    <div class="stat-card-icon"><i class="fas fa-circle-{% if failed > 0 %}xmark{% else %}check{% endif %}"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ passed }}/{{ total_subjects }}</span>
+      <span class="stat-card-label">Subjects Passed</span>
+    </div>
+  </div>
+</div>
+
+<!-- Semester Breakdown -->
+<div class="section-row" style="flex-direction: column;">
+  {% if semester_data %}
+    {% for data in semester_data %}
+    <div class="section-card" style="margin-bottom: 24px;">
+      <div class="card-header" style="background:var(--hover); padding-bottom: 16px;">
+        <div>
+          <h2 class="card-title" style="margin-bottom:4px;"><i class="fas fa-graduation-cap" style="color:var(--primary)"></i> Semester {{ data.summary.semester }} ({{ data.summary.academic_year }})</h2>
+          <span style="font-size: 13px; color: var(--gray-600);">Class: {{ data.summary.enrollment.student_class }} | Roll: {{ data.summary.enrollment.roll_id }}</span>
+        </div>
+        <div style="font-size: 14px; font-weight: bold;">
+          SGPA: {{ data.summary.sgpa }} &nbsp;|&nbsp;
+          {% if data.summary.result == 'Pass' %}<span style="color:var(--green-600)">Pass</span>
+          {% else %}<span style="color:var(--red-600)">Fail</span>{% endif %}
+        </div>
+      </div>
+      <table class="mini-table">
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Total</th>
+            <th>Grade</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in data.results %}
+          <tr>
+            <td>{{ r.semester_subject.subject.display_name }}</td>
+            <td><strong>{{ r.total }}/{{ r.semester_subject.max_total }}</strong></td>
+            <td><span class="grade-badge grade-{{ r.grade }}">{{ r.grade }}</span></td>
+            <td>
+              {% if r.status == 'Pass' %}<span class="status-badge status-pass"><i class="fas fa-check"></i> Pass</span>
+              {% elif r.status == 'Fail' %}<span class="status-badge status-fail"><i class="fas fa-xmark"></i> Fail</span>
+              {% else %}<span class="status-badge status-pending">{{ r.status }}</span>{% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="empty-td">No results yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="section-card">
+      <div class="empty-state">
+        <i class="fas fa-graduation-cap"></i>
+        <h3>No Semester Results found</h3>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Notices -->
+{% if notices %}
+<div class="section-card">
+  <div class="card-header">
+    <h2 class="card-title"><i class="fas fa-bell"></i> Latest Notices</h2>
+    <a href="{% url 'student_notices' %}" class="card-link">View All</a>
+  </div>
+  <div class="notices-strip">
+    {% for notice in notices %}
+    <div class="notice-strip-item">
+      <div class="nsi-dot"></div>
+      <div class="nsi-content">
+        <span class="nsi-title">{{ notice.title }}</span>
+        <span class="nsi-date">{{ notice.created_at|date:"d M Y" }}</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endblock %}

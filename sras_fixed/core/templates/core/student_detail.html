@@ -1,0 +1,96 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ student.name }}{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 'student_list' %}"><i class="fas fa-users"></i> Students</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">{{ student.name }}</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ student.name }}</h1>
+    <p class="page-subtitle">
+      {% if student.current_enrollment %}
+        Roll: <span class="badge-roll">{{ student.roll_id }}</span>
+        &mdash; {{ student.student_class }}
+      {% else %}
+        <span class="text-muted">No active enrollment</span>
+      {% endif %}
+    </p>
+  </div>
+  <div class="header-actions">
+    <a href="{% url 'student_edit' student.pk %}" class="btn btn-outline"><i class="fas fa-pen"></i> Edit</a>
+    <a href="{% url 'student_list' %}" class="btn btn-outline"><i class="fas fa-arrow-left"></i> Back</a>
+  </div>
+</div>
+
+<div class="section-row">
+  <!-- Student Info -->
+  <div class="section-card flex-1">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-circle-user"></i> Student Information</h2></div>
+    <div class="info-grid">
+      <div class="info-item"><span class="info-label">Full Name</span><span class="info-value">{{ student.name }}</span></div>
+      <div class="info-item"><span class="info-label">Roll ID</span><span class="info-value"><span class="badge-roll">{{ student.roll_id }}</span></span></div>
+      <div class="info-item"><span class="info-label">Email</span><span class="info-value">{{ student.email|default:"Not provided" }}</span></div>
+      <div class="info-item"><span class="info-label">Gender</span><span class="info-value"><span class="gender-badge gender-{{ student.gender|lower }}">{{ student.gender }}</span></span></div>
+      <div class="info-item"><span class="info-label">Date of Birth</span><span class="info-value">{{ student.date_of_birth|date:"d M Y"|default:"Not provided" }}</span></div>
+      <div class="info-item"><span class="info-label">Class</span><span class="info-value"><span class="badge-class-sm">{{ student.student_class }}</span></span></div>
+    </div>
+  </div>
+
+  <!-- Result Summary -->
+  <div class="section-card flex-1">
+    <div class="card-header"><h2 class="card-title"><i class="fas fa-chart-bar"></i> Result Summary</h2></div>
+    {% if results %}
+    <div class="result-summary">
+      <div class="result-summary-stat">
+        <span class="rs-num">{{ results|length }}</span>
+        <span class="rs-label">Subjects</span>
+      </div>
+      <div class="result-summary-stat">
+        <span class="rs-num">{{ total }}</span>
+        <span class="rs-label">Total Marks</span>
+      </div>
+      <div class="result-summary-stat">
+        <span class="rs-num">{{ percentage }}%</span>
+        <span class="rs-label">Overall %</span>
+      </div>
+    </div>
+    {% else %}
+    <p class="empty-state-sm">No results recorded yet.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Results Table -->
+{% if results %}
+<div class="section-card">
+  <div class="card-header"><h2 class="card-title"><i class="fas fa-clipboard-list"></i> Subject-wise Results</h2></div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Subject</th><th>IA-1 /20</th><th>IA-2 /20</th><th>SEM /60</th><th>Total /100</th><th>%</th><th>Grade</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {% for result in results %}
+      <tr>
+        <td><strong>{{ result.subject.display_name }}</strong>{% if result.subject.code %} <span class="badge-code">{{ result.subject.code }}</span>{% endif %}</td>
+        <td class="{% if result.is_fail_ia1 %}td-fail{% endif %}">{{ result.ia1_marks }}</td>
+        <td class="{% if result.is_fail_ia2 %}td-fail{% endif %}">{{ result.ia2_marks }}</td>
+        <td class="{% if result.is_fail_sem %}td-fail{% endif %}">{{ result.sem_marks }}</td>
+        <td><strong>{{ result.total_marks }}</strong></td>
+        <td>{{ result.percentage }}%</td>
+        <td><span class="grade-badge grade-{{ result.grade }}">{{ result.grade }}</span></td>
+        <td>
+          {% if result.is_overall_fail %}
+          <span class="status-badge status-fail"><i class="fas fa-xmark"></i> Fail</span>
+          {% else %}
+          <span class="status-badge status-pass"><i class="fas fa-check"></i> Pass</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

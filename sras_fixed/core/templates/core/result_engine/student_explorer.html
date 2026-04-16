@@ -1,0 +1,149 @@
+{% extends 'core/student/base_student.html' %}
+{% block title %}My Results{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item active"><i class="fas fa-clipboard-list"></i> My Results</span>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">My Results</h1>
+    <p class="page-subtitle">{{ enrollment.student_class }} — Roll: <span class="badge-roll">{{ enrollment.roll_id }}</span>
+      &nbsp;CGPA: <span class="badge-count">{{ cgpa }}</span>
+    </p>
+  </div>
+</div>
+
+<!-- Semester Selector -->
+<div class="section-card" style="margin-bottom:20px;">
+  <div class="card-header"><h2 class="card-title"><i class="fas fa-calendar-alt"></i> Select Semester</h2></div>
+  <div style="padding:16px; display:flex; flex-wrap:wrap; gap:10px;">
+    {% for sem_item in semesters %}
+    <a href="{% url 'student_result_explorer' %}?sem={{ sem_item.semester }}&year={{ sem_item.academic_year }}"
+       class="sem-pill {% if sel_sem == sem_item.semester and sel_year == sem_item.academic_year %}sem-pill-active{% endif %}">
+      <i class="fas fa-layer-group"></i>
+      Sem {{ sem_item.semester }}
+      <span style="font-size:11px; opacity:0.7;">{{ sem_item.academic_year }}</span>
+    </a>
+    {% empty %}
+    <p class="text-muted">No semesters found. Results will appear here once your teacher enters marks.</p>
+    {% endfor %}
+  </div>
+</div>
+
+{% if sel_sem and sel_year %}
+
+{% if summary %}
+<!-- Summary Row -->
+<div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
+  <div class="stat-card stat-orange">
+    <div class="stat-card-icon"><i class="fas fa-book"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ results|length }}</span>
+      <span class="stat-card-label">Subjects</span>
+    </div>
+  </div>
+  <div class="stat-card stat-green">
+    <div class="stat-card-icon"><i class="fas fa-star"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ summary.sgpa }}</span>
+      <span class="stat-card-label">SGPA</span>
+    </div>
+  </div>
+  <div class="stat-card stat-orange">
+    <div class="stat-card-icon"><i class="fas fa-percent"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ summary.percentage|floatformat:1 }}%</span>
+      <span class="stat-card-label">Percentage</span>
+    </div>
+  </div>
+  <div class="stat-card stat-teal">
+    <div class="stat-card-icon"><i class="fas fa-award"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ summary.earned_credits }}/{{ summary.total_credits }}</span>
+      <span class="stat-card-label">Credits Earned</span>
+    </div>
+  </div>
+  <div class="stat-card {% if summary.result == 'Pass' %}stat-green{% else %}stat-red{% endif %}">
+    <div class="stat-card-icon"><i class="fas fa-circle-{% if summary.result == 'Pass' %}check{% else %}xmark{% endif %}"></i></div>
+    <div class="stat-card-body">
+      <span class="stat-card-num">{{ summary.result }}</span>
+      <span class="stat-card-label">Semester Result</span>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- Sections (IA / SEM / TW / Oral) -->
+{% for section_name, section_results in sections.items %}
+<div class="section-card" style="margin-bottom:16px;">
+  <div class="card-header">
+    <h2 class="card-title">
+      <i class="fas fa-{% if 'Internal' in section_name %}pencil{% elif 'Semester' in section_name %}scroll{% elif 'Term' in section_name %}clipboard{% else %}microphone{% endif %}"></i>
+      {{ section_name }}
+    </h2>
+    <a href="{% url 're_marksheet' sel_sem sel_year %}" class="card-link">Full Marksheet</a>
+  </div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Subject</th>
+        {% if 'Internal' in section_name %}
+        <th>IA-1 /{{ section_results.0.semester_subject.max_ia1 }}</th>
+        <th>IA-2 /{{ section_results.0.semester_subject.max_ia2 }}</th>
+        <th>IA Total</th>
+        {% elif 'Semester' in section_name %}
+        <th>SEM /{{ section_results.0.semester_subject.max_sem }}</th>
+        {% elif 'Term' in section_name %}
+        <th>TW /{{ section_results.0.semester_subject.max_tw }}</th>
+        {% else %}
+        <th>Oral /{{ section_results.0.semester_subject.max_oral }}</th>
+        {% endif %}
+        <th>Grade</th>
+        <th>Status</th>
+        <th>Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in section_results %}
+      <tr>
+        <td><strong>{{ r.semester_subject.subject.display_name }}</strong>
+          {% if r.semester_subject.subject.code %}<span class="badge-code">{{ r.semester_subject.subject.code }}</span>{% endif %}
+        </td>
+        {% if 'Internal' in section_name %}
+        <td class="{% if r.is_fail_ia %}td-fail{% endif %}">{{ r.ia1|default:"—"|floatformat:1 }}</td>
+        <td class="{% if r.is_fail_ia %}td-fail{% endif %}">{{ r.ia2|default:"—"|floatformat:1 }}</td>
+        <td><strong>{{ r.ia_total|floatformat:1 }}</strong></td>
+        {% elif 'Semester' in section_name %}
+        <td class="{% if r.is_fail_sem %}td-fail{% endif %}"><strong>{{ r.sem|default:"—"|floatformat:1 }}</strong></td>
+        {% elif 'Term' in section_name %}
+        <td class="{% if r.is_fail_tw %}td-fail{% endif %}"><strong>{{ r.tw|default:"—"|floatformat:1 }}</strong></td>
+        {% else %}
+        <td class="{% if r.is_fail_oral %}td-fail{% endif %}"><strong>{{ r.oral|default:"—"|floatformat:1 }}</strong></td>
+        {% endif %}
+        <td><span class="grade-badge grade-{{ r.grade }}">{{ r.grade }}</span></td>
+        <td>
+          {% if r.status == 'Pass' %}<span class="status-badge status-pass"><i class="fas fa-check"></i> Pass</span>
+          {% elif r.status == 'Absent' %}<span class="status-badge" style="background:var(--orange-100);color:var(--orange-500)"><i class="fas fa-circle-exclamation"></i> Absent</span>
+          {% else %}<span class="status-badge status-fail"><i class="fas fa-xmark"></i> Fail</span>{% endif %}
+        </td>
+        <td>
+          <a href="{% url 're_subject_detail' r.semester_subject.pk %}" class="btn-icon btn-view"><i class="fas fa-eye"></i></a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% empty %}
+<div class="section-card">
+  <div class="empty-state">
+    <i class="fas fa-clipboard-list"></i>
+    <h3>No Results Found</h3>
+    <p>No marks have been entered for Semester {{ sel_sem }} yet.</p>
+  </div>
+</div>
+{% endfor %}
+
+{% endif %}
+{% endblock %}

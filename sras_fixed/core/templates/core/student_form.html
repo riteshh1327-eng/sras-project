@@ -1,0 +1,58 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ action }} Student{% endblock %}
+{% block breadcrumb %}
+<span class="breadcrumb-item"><a href="{% url 'student_list' %}"><i class="fas fa-users"></i> Students</a></span>
+<span class="breadcrumb-sep">/</span>
+<span class="breadcrumb-item active">{{ action }} Student</span>
+{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ action }} Student</h1>
+    <p class="page-subtitle">
+      {% if action == 'Edit' %}Update permanent student identity{% else %}Register a new student (permanent identity — no class or roll number here){% endif %}
+    </p>
+  </div>
+  <a href="{% url 'student_list' %}" class="btn btn-outline">
+    <i class="fas fa-arrow-left"></i> Back
+  </a>
+</div>
+
+<div class="form-card" style="max-width:560px;">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid-2">
+      {% for field in form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}
+          <small class="form-hint">{{ field.help_text }}</small>
+        {% endif %}
+        {% for error in field.errors %}
+          <span class="form-error">
+            <i class="fas fa-circle-exclamation"></i> {{ error }}
+          </span>
+        {% endfor %}
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if action == 'Add' %}
+    <div class="alert alert-info" style="margin-top:16px; font-size:0.88rem;">
+      <i class="fas fa-circle-info"></i>
+      After adding the student, use
+      <a href="{% url 're_enrollment_create' %}"><strong>Enroll Student</strong></a>
+      to assign them to a class and roll number.
+    </div>
+    {% endif %}
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">
+        <i class="fas fa-save"></i> {{ action }} Student
+      </button>
+      <a href="{% url 'student_list' %}" class="btn btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
