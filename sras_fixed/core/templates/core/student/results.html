@@ -43,7 +43,6 @@
           <th>Oral</th>
           <th>SEM</th>
           <th>Total</th>
-          <th>%</th>
           <th>Grade</th>
           <th>Status</th>
         </tr>
@@ -74,7 +73,6 @@
             {% if r.semester_subject.has_sem %}{{ r.sem|default:"—" }}{% else %}—{% endif %}
           </td>
           <td><strong>{{ r.total }}</strong></td>
-          <td>{{ r.percentage }}%</td>
           <td><span class="grade-badge grade-{{ r.grade }}">{{ r.grade }}</span></td>
           <td>
             {% if r.status == 'Pass' %}

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,8 +8,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="/static/css/main.css" />
-  <link rel="stylesheet" href="/static/css/student.css" />
+  <link rel="stylesheet" href="{% static 'css/main.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/student.css' %}" />
   {% block extra_css %}{% endblock %}
 </head>
 <body class="app-layout student-theme">
@@ -42,9 +43,6 @@
         </a>
         <a href="{% url 'student_result_explorer' %}" class="nav-item {% if 'student_result_explorer' in request.resolver_match.url_name|default:'' or 're_subject_detail' in request.resolver_match.url_name|default:'' %}active{% endif %}">
           <i class="fas fa-scroll"></i><span>Semester Results</span>
-        </a>
-        <a href="{% url 're_student_performance' %}" class="nav-item {% if request.resolver_match.url_name == 're_student_performance' %}active{% endif %}">
-          <i class="fas fa-chart-line"></i><span>Performance Analytics</span>
         </a>
         <a href="{% url 'student_results' %}" class="nav-item {% if 'student_result' in request.resolver_match.url_name|default:'' and 'explorer' not in request.resolver_match.url_name|default:'' %}active{% endif %}">
           <i class="fas fa-clipboard-list"></i><span>My Results (Basic)</span>
@@ -99,7 +97,7 @@
     </div>
   </main>
 
-  <script src="/static/js/main.js"></script>
+  <script src="{% static 'js/main.js' %}"></script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

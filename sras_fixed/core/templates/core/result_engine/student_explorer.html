@@ -9,7 +9,6 @@
   <div>
     <h1 class="page-title">My Results</h1>
     <p class="page-subtitle">{{ enrollment.student_class }} — Roll: <span class="badge-roll">{{ enrollment.roll_id }}</span>
-      &nbsp;CGPA: <span class="badge-count">{{ cgpa }}</span>
     </p>
   </div>
 </div>
@@ -35,26 +34,12 @@
 
 {% if summary %}
 <!-- Summary Row -->
-<div class="stats-grid" style="grid-template-columns: repeat(5, 1fr);">
+<div class="stats-grid" style="grid-template-columns: repeat(3, 1fr);">
   <div class="stat-card stat-orange">
     <div class="stat-card-icon"><i class="fas fa-book"></i></div>
     <div class="stat-card-body">
       <span class="stat-card-num">{{ results|length }}</span>
       <span class="stat-card-label">Subjects</span>
-    </div>
-  </div>
-  <div class="stat-card stat-green">
-    <div class="stat-card-icon"><i class="fas fa-star"></i></div>
-    <div class="stat-card-body">
-      <span class="stat-card-num">{{ summary.sgpa }}</span>
-      <span class="stat-card-label">SGPA</span>
-    </div>
-  </div>
-  <div class="stat-card stat-orange">
-    <div class="stat-card-icon"><i class="fas fa-percent"></i></div>
-    <div class="stat-card-body">
-      <span class="stat-card-num">{{ summary.percentage|floatformat:1 }}%</span>
-      <span class="stat-card-label">Percentage</span>
     </div>
   </div>
   <div class="stat-card stat-teal">

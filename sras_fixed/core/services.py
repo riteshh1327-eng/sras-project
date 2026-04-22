@@ -1,7 +1,7 @@
 """
 SRAS — Result Engine Services (Phase-Aware Edition)
 =====================================================
-ALL grading/SGPA/pass-fail logic lives here.
+ALL grading/pass-fail logic lives here.
 Views and models must NEVER replicate any of this logic.
 
 Public API
@@ -11,7 +11,6 @@ Public API
   compute_result(er, save=True)             → mutates EnhancedResult in-place
   compute_bulk(semester_subject, enrollment_marks) → {created, updated, errors}
   compute_semester_summary(enrollment, sem, ay)    → SemesterSummary
-  get_cgpa(student)                         → float
   get_student_marksheet(enrollment, sem, ay)→ dict
   get_class_analytics(student_class, sem, ay) → dict
   seed_grade_scale()                        → int (rows seeded)
@@ -353,47 +352,10 @@ def compute_bulk(semester_subject, enrollment_marks: list) -> dict:
         'errors': errors
     }
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# 6. SGPA
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def calculate_sgpa(results: list) -> float:
-    """
-    SGPA = Σ(grade_points × credits) / Σ(credits)
-    Only counts results that are in the final Pass/Fail phase.
-    """
-    total_gp = Decimal('0')
-    total_cr = Decimal('0')
-
-    for r in results:
-        if r.status not in ('Pass', 'Fail', 'Absent'):
-            continue  # skip non-final phases
-        credits = Decimal(str(r.credits))
-        gp      = Decimal(str(r.grade_points))
-        total_gp += gp * credits
-        total_cr += credits
-
-    if total_cr == 0:
-        return 0.0
-    return float((total_gp / total_cr).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP))
-
-
-def get_cgpa(student) -> float:
-    """
-    CGPA = mean of all semester SGPAs for this student (across all enrollments).
-    """
-    _, _, _, SemesterSummary, _, _, _ = _m()
-    summaries = SemesterSummary.objects.filter(
-        enrollment__student=student
-    ).exclude(sgpa=0)
-    if not summaries.exists():
-        return 0.0
-    total = sum(float(s.sgpa) for s in summaries)
-    return round(total / summaries.count(), 2)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 7. SEMESTER SUMMARY COMPUTATION
+# 6. SEMESTER SUMMARY COMPUTATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def compute_semester_summary(enrollment, semester: str, academic_year: str):
@@ -417,9 +379,6 @@ def compute_semester_summary(enrollment, semester: str, academic_year: str):
     max_marks       = sum(r.semester_subject.max_total for r in results)
     subjects_failed = sum(1 for r in results if r.status in ('Fail', 'Absent'))
 
-    pct      = round(total_marks / max_marks * 100, 2) if max_marks else 0.0
-    sgpa     = calculate_sgpa(results)
-    cgpa     = get_cgpa(enrollment.student)
     result_s = 'Pass' if subjects_failed == 0 and results else 'Fail'
 
     summary, _ = SemesterSummary.objects.update_or_create(
@@ -431,9 +390,9 @@ def compute_semester_summary(enrollment, semester: str, academic_year: str):
             'earned_credits': earned_credits,
             'total_marks':    total_marks,
             'max_marks':      max_marks,
-            'percentage':     pct,
-            'sgpa':           sgpa,
-            'cgpa':           cgpa,
+            'percentage':     0,
+            'sgpa':           0,
+            'cgpa':           0,
             'result':         result_s,
             'subjects_failed':subjects_failed,
         }
@@ -487,7 +446,6 @@ def get_student_marksheet(enrollment, semester: str, academic_year: str) -> dict
         'academic_year': academic_year,
         'results':       results,
         'summary':       summary,
-        'cgpa':          get_cgpa(enrollment.student),
         'grade_scale':   list(GradeScale.objects.all()),
     }
 
@@ -544,7 +502,6 @@ def get_class_analytics(student_class, semester: str, academic_year: str) -> dic
     pass_pct   = round(pass_count / total * 100, 1) if total else 0
 
     at_risk    = [s for s in summaries if s.subjects_failed >= 2]
-    avg_sgpa   = round(sum(float(s.sgpa) for s in summaries) / total, 2) if total else 0
 
     # Subject-level stats
     results_qs = EnhancedResult.objects.filter(
@@ -587,7 +544,6 @@ def get_class_analytics(student_class, semester: str, academic_year: str) -> dic
         'fail_count':     fail_count,
         'pass_pct':       pass_pct,
         'total_students': total,
-        'class_avg_sgpa': avg_sgpa,
         'at_risk':        at_risk,
         'subject_stats':  subject_stats,
         'grade_dist':     grade_dist,

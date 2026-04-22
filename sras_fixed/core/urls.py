@@ -61,7 +61,7 @@ urlpatterns = [
     path('student/dashboard/',          views.student_dashboard,        name='student_dashboard'),
     path('student/results/',            views.student_results,          name='student_results'),
     path('student/results/<int:subject_id>/', views.student_subject_detail, name='student_subject_detail'),
-    path('student/performance/',        views.student_performance,      name='student_performance'),
+
     path('student/notices/',            views.student_notices,          name='student_notices'),
     path('student/export-csv/',         views.student_export_results_csv, name='student_export_csv'),
 
@@ -92,7 +92,7 @@ urlpatterns += [
 
     # Class Results / Analytics (Teacher) — no topper/rank
     path('results/engine/class/',                   rv.enhanced_result_list, name='re_result_list'),
-    path('analytics/teacher/',                      rv.teacher_analytics,    name='re_teacher_analytics'),
+
 
     # Student Portal (Enrollment-centric)
     path('student/results/explore/',                rv.student_result_explorer,       name='student_result_explorer'),
@@ -101,7 +101,7 @@ urlpatterns += [
                                                     rv.student_marksheet,            name='re_marksheet'),
     path('student/marksheet/<str:semester>/<str:academic_year>/<int:student_pk>/pdf/',
                                                     rv.student_marksheet_pdf,        name='re_marksheet_pdf'),
-    path('student/performance/enhanced/',           rv.student_performance_enhanced, name='re_student_performance'),
+
 
     # AJAX
     path('api/engine/semester-subjects/',           rv.ajax_semester_subjects,          name='re_ajax_semester_subjects'),

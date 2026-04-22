@@ -523,63 +523,6 @@ def enhanced_result_list(request):
     })
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TEACHER — ANALYTICS DASHBOARD  (no topper/rank)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@teacher_required
-def teacher_analytics(request):
-    """
-    Class analytics with Chart.js.
-    Topper and rank logic removed per spec Section 4.
-    Student list ordered by roll_id ascending.
-    """
-    academic_years = (
-        SemesterSubject.objects
-        .values_list('academic_year', flat=True)
-        .distinct()
-        .order_by('-academic_year')
-    )
-    classes  = StudentClass.objects.all()
-    sem_list = [(str(i), f'Semester {i}') for i in range(1, 9)]
-
-    sel_year = request.GET.get('year', '')
-    sel_cls  = request.GET.get('class_id', '')
-    sel_sem  = request.GET.get('sem', '')
-
-    analytics = {}
-    sc = None
-
-    if sel_year and sel_cls and sel_sem:
-        sc = get_object_or_404(StudentClass, pk=sel_cls)
-        analytics = services.get_class_analytics(sc, sel_sem, sel_year)
-
-    # Build JSON for Chart.js (summaries already sorted by roll_id in service)
-    summaries     = analytics.get('summaries', [])
-    subj_names    = json.dumps([s['subject']   for s in analytics.get('subject_stats', [])])
-    subj_fail_pcts= json.dumps([s['fail_pct']  for s in analytics.get('subject_stats', [])])
-    subj_avg      = json.dumps([s['avg_marks'] for s in analytics.get('subject_stats', [])])
-    grade_dist    = json.dumps(analytics.get('grade_dist', {}))
-    # Label by roll_id for the SGPA distribution chart
-    student_labels= json.dumps([s.enrollment.roll_id for s in summaries])
-    student_sgpas = json.dumps([float(s.sgpa)         for s in summaries])
-
-    return render(request, 'core/result_engine/teacher_analytics.html', {
-        'academic_years':    academic_years,
-        'classes':           classes,
-        'sem_list':          sem_list,
-        'sel_year':          sel_year,
-        'sel_cls':           sel_cls,
-        'sel_sem':           sel_sem,
-        'sc':                sc,
-        'analytics':         analytics,
-        'subj_names_json':   subj_names,
-        'subj_fail_json':    subj_fail_pcts,
-        'subj_avg_json':     subj_avg,
-        'grade_dist_json':   grade_dist,
-        'student_names_json':student_labels,
-        'student_sgpa_json': student_sgpas,
-    })
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -669,7 +612,7 @@ def student_result_explorer(request):
             if ss.has_oral:
                 sections.setdefault('Oral / Practical', []).append(r)
 
-    cgpa = services.get_cgpa(student)
+
 
     # Use the most recent enrollment for display in header
     current_enrollment = all_enrollments[-1] if all_enrollments else None
@@ -683,7 +626,6 @@ def student_result_explorer(request):
         'results':      results,
         'summary':      summary,
         'sections':     sections,
-        'cgpa':         cgpa,
     })
 
 
@@ -767,71 +709,7 @@ def student_marksheet_pdf(request, semester, academic_year, student_pk):
     return render(request, 'core/result_engine/marksheet.html', data)
 
 
-@student_required
-def student_performance_enhanced(request):
-    """
-    Chart.js performance analytics across all semesters.
-    Reads SemesterSummary across ALL enrollments of the student.
-    """
-    student = _get_current_student(request)
 
-    # All summaries for this student, ALL enrollments, ordered by year+semester
-    summaries = list(
-        SemesterSummary.objects
-        .filter(enrollment__student=student)
-        .select_related('enrollment')
-        .order_by('enrollment__academic_year', 'semester')
-    )
-
-    sem_labels = json.dumps([f"Sem {s.semester} ({s.academic_year})" for s in summaries])
-    sgpa_vals  = json.dumps([float(s.sgpa)        for s in summaries])
-    pct_vals   = json.dumps([float(s.percentage)  for s in summaries])
-
-    # Latest semester subject breakdown — use the latest summary's enrollment
-    latest_results = []
-    latest_sem     = None
-    if summaries:
-        latest = summaries[-1]
-        latest_sem = latest.semester
-        latest_results = list(
-            EnhancedResult.objects
-            .filter(
-                enrollment=latest.enrollment,          # ← correct enrollment
-                semester_subject__semester=latest_sem,
-                semester_subject__academic_year=latest.academic_year,
-            )
-            .select_related('semester_subject__subject')
-            .order_by('semester_subject__subject__name')
-        )
-
-    subj_labels = json.dumps([r.semester_subject.subject.display_name for r in latest_results])
-    subj_totals = json.dumps([float(r.total) for r in latest_results])
-    subj_max    = json.dumps([r.semester_subject.max_total for r in latest_results])
-
-    # Grade distribution across ALL enrollments
-    grade_dist = {'O': 0, 'A+': 0, 'A': 0, 'B+': 0, 'B': 0, 'C': 0, 'F': 0}
-    for r in EnhancedResult.objects.filter(enrollment__student=student).only('grade'):
-        if r.grade in grade_dist:
-            grade_dist[r.grade] += 1
-
-    # Use the most recent enrollment for header display
-    current_enrollment = summaries[-1].enrollment if summaries else student.current_enrollment
-
-    return render(request, 'core/result_engine/student_performance.html', {
-        'student':          student,
-        'enrollment':       current_enrollment,
-        'summaries':        summaries,
-        'cgpa':             services.get_cgpa(student),
-        'latest_results':   latest_results,
-        'latest_sem':       latest_sem,
-        'sem_labels_json':  sem_labels,
-        'sgpa_json':        sgpa_vals,
-        'pct_json':         pct_vals,
-        'subj_labels_json': subj_labels,
-        'subj_totals_json': subj_totals,
-        'subj_max_json':    subj_max,
-        'grade_dist_json':  json.dumps(grade_dist),
-    })
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

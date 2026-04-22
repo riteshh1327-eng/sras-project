@@ -159,13 +159,6 @@
       <span class="stat-card-label">Pass Rate</span>
     </div>
   </div>
-  <div class="stat-card stat-orange">
-    <div class="stat-card-icon"><i class="fas fa-chart-line"></i></div>
-    <div class="stat-card-body">
-      <span class="stat-card-num">{{ analytics.class_avg_sgpa }}</span>
-      <span class="stat-card-label">Class Avg SGPA</span>
-    </div>
-  </div>
   <div class="stat-card stat-red">
     <div class="stat-card-icon"><i class="fas fa-triangle-exclamation"></i></div>
     <div class="stat-card-body">
@@ -193,8 +186,6 @@
           <th style="width:10%">Roll No</th>
           <th>Student Name</th>
           <th style="text-align:center;">Total</th>
-          <th style="text-align:center;">%</th>
-          <th style="text-align:center;">SGPA</th>
           <th style="text-align:center;">Credits</th>
           <th style="text-align:center;">Failed</th>
           <th style="text-align:center;">Result</th>
@@ -212,10 +203,6 @@
             </a>
           </td>
           <td style="text-align:center;">{{ s.total_marks|floatformat:1 }} / {{ s.max_marks|floatformat:0 }}</td>
-          <td style="text-align:center;">{{ s.percentage|floatformat:1 }}%</td>
-          <td style="text-align:center;">
-            <span class="sgpa-pill {% if s.sgpa >= 8 %}sgpa-high{% elif s.sgpa >= 6 %}sgpa-mid{% else %}sgpa-low{% endif %}">{{ s.sgpa }}</span>
-          </td>
           <td style="text-align:center;">{{ s.earned_credits }} / {{ s.total_credits }}</td>
           <td style="text-align:center;">
             {% if s.subjects_failed > 0 %}
