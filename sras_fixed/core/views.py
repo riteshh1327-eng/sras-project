@@ -93,6 +93,13 @@ def login_view(request):
                 _set_teacher_session(request, teacher)
                 messages.success(request, f'Welcome back, {teacher.name}!')
                 return redirect('dashboard')
+            # Fallback: plaintext password stored in DB (auto-rehash on match)
+            if teacher.password == password:
+                teacher.set_password(password)
+                teacher.save()
+                _set_teacher_session(request, teacher)
+                messages.success(request, f'Welcome back, {teacher.name}!')
+                return redirect('dashboard')
             messages.error(request, 'Incorrect password.')
             return render(request, 'core/login.html', {})
 
