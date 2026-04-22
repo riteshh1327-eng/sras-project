@@ -10,11 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # ─── SECURITY ────────────────────────────────────────────────
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-sras-dev-key-change-in-production')
+DEBUG = False
+ALLOWED_HOSTS = ['*']
 
-# DEBUG is True locally, False on Render (where RENDER env var is set)
-DEBUG = 'RENDER' not in os.environ
-
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -117,12 +115,11 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
-# ─── PRODUCTION SECURITY (only on Render) ───────────────────
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+# ─── PRODUCTION SECURITY ────────────────────────────────────
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = bool(os.environ.get('RENDER_EXTERNAL_HOSTNAME'))
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
